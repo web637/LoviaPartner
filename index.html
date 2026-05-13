@@ -540,45 +540,87 @@
 
 <!-- ========== ADMIN DASHBOARD ========== -->
 <div id="page-admin" class="page dashboard-page">
+  <!-- Overlay untuk tutup sidebar di mobile -->
+  <div class="db-overlay" id="adminOverlay" onclick="closeDashSidebar('admin')"></div>
+
+  <!-- Sidebar / Drawer -->
   <div class="dashboard-sidebar" id="adminSidebar">
-    <div class="db-logo">Lovia<span>Admin</span></div>
+    <div class="db-logo">
+      Lovia<span>Admin</span>
+      <button class="db-logo-close" onclick="closeDashSidebar('admin')" title="Tutup menu">✕</button>
+    </div>
     <nav class="db-nav">
-      <a class="db-link active" onclick="showAdminTab('overview')"><i class="fas fa-chart-pie"></i> Overview</a>
-      <a class="db-link" onclick="showAdminTab('talents')"><i class="fas fa-users"></i> Kelola Talent</a>
-      <a class="db-link" onclick="showAdminTab('orders')"><i class="fas fa-shopping-bag"></i> Pesanan</a>
-      <a class="db-link" onclick="showAdminTab('pricelist')"><i class="fas fa-tags"></i> Pricelist</a>
-      <a class="db-link" onclick="showAdminTab('testimonials')"><i class="fas fa-star"></i> Testimoni</a>
-      <a class="db-link" onclick="showAdminTab('settings')"><i class="fas fa-cog"></i> Pengaturan</a>
+      <a class="db-link active" onclick="showAdminTab('overview');closeDashSidebar('admin')"><i class="fas fa-chart-pie"></i> Overview</a>
+      <a class="db-link" onclick="showAdminTab('talents');closeDashSidebar('admin')"><i class="fas fa-users"></i> Kelola Talent</a>
+      <a class="db-link" onclick="showAdminTab('orders');closeDashSidebar('admin')"><i class="fas fa-shopping-bag"></i> Pesanan</a>
+      <a class="db-link" onclick="showAdminTab('pricelist');closeDashSidebar('admin')"><i class="fas fa-tags"></i> Pricelist</a>
+      <a class="db-link" onclick="showAdminTab('testimonials');closeDashSidebar('admin')"><i class="fas fa-star"></i> Testimoni</a>
+      <a class="db-link" onclick="showAdminTab('settings');closeDashSidebar('admin')"><i class="fas fa-cog"></i> Pengaturan</a>
     </nav>
     <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
-  <div class="dashboard-content" id="adminContent">
-    <div id="admin-tab-overview" class="admin-tab active"></div>
-    <div id="admin-tab-talents" class="admin-tab"></div>
-    <div id="admin-tab-orders" class="admin-tab"></div>
-    <div id="admin-tab-pricelist" class="admin-tab"></div>
-    <div id="admin-tab-testimonials" class="admin-tab"></div>
-    <div id="admin-tab-settings" class="admin-tab"></div>
+
+  <!-- Main content -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+    <!-- Mobile Topbar -->
+    <div class="db-topbar">
+      <button class="db-hamburger" onclick="openDashSidebar('admin')" title="Buka menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="db-topbar-title">Lovia <span style="color:var(--pink-deep)">Admin</span></div>
+      <span class="db-topbar-user">👑 Admin</span>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="dashboard-content" id="adminContent">
+      <div id="admin-tab-overview" class="admin-tab active"></div>
+      <div id="admin-tab-talents" class="admin-tab"></div>
+      <div id="admin-tab-orders" class="admin-tab"></div>
+      <div id="admin-tab-pricelist" class="admin-tab"></div>
+      <div id="admin-tab-testimonials" class="admin-tab"></div>
+      <div id="admin-tab-settings" class="admin-tab"></div>
+    </div>
   </div>
 </div>
 
 <!-- ========== TALENT DASHBOARD ========== -->
 <div id="page-talent-dash" class="page dashboard-page">
+  <!-- Overlay untuk tutup sidebar di mobile -->
+  <div class="db-overlay" id="talentOverlay" onclick="closeDashSidebar('talent')"></div>
+
+  <!-- Sidebar / Drawer -->
   <div class="dashboard-sidebar" id="talentSidebar">
-    <div class="db-logo">Lovia<span>Talent</span></div>
+    <div class="db-logo">
+      Lovia<span>Talent</span>
+      <button class="db-logo-close" onclick="closeDashSidebar('talent')" title="Tutup menu">✕</button>
+    </div>
     <nav class="db-nav">
-      <a class="db-link active" onclick="showTalentTab('overview')"><i class="fas fa-home"></i> Dashboard</a>
-      <a class="db-link" onclick="showTalentTab('orders')"><i class="fas fa-calendar-check"></i> Booking</a>
-      <a class="db-link" onclick="showTalentTab('profile')"><i class="fas fa-user-edit"></i> Edit Profil</a>
-      <a class="db-link" onclick="showTalentTab('earnings')"><i class="fas fa-wallet"></i> Pendapatan</a>
+      <a class="db-link active" onclick="showTalentTab('overview');closeDashSidebar('talent')"><i class="fas fa-home"></i> Dashboard</a>
+      <a class="db-link" onclick="showTalentTab('orders');closeDashSidebar('talent')"><i class="fas fa-calendar-check"></i> Booking</a>
+      <a class="db-link" onclick="showTalentTab('profile');closeDashSidebar('talent')"><i class="fas fa-user-edit"></i> Edit Profil</a>
+      <a class="db-link" onclick="showTalentTab('earnings');closeDashSidebar('talent')"><i class="fas fa-wallet"></i> Pendapatan</a>
     </nav>
     <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
-  <div class="dashboard-content" id="talentContent">
-    <div id="talent-tab-overview" class="talent-tab active"></div>
-    <div id="talent-tab-orders" class="talent-tab"></div>
-    <div id="talent-tab-profile" class="talent-tab"></div>
-    <div id="talent-tab-earnings" class="talent-tab"></div>
+
+  <!-- Main content -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+    <!-- Mobile Topbar -->
+    <div class="db-topbar">
+      <button class="db-hamburger" onclick="openDashSidebar('talent')" title="Buka menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="db-topbar-title">Lovia <span style="color:var(--pink-deep)">Talent</span></div>
+      <span class="db-topbar-user" id="talentTopbarUser">✨ Talent</span>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="dashboard-content" id="talentContent">
+      <div id="talent-tab-overview" class="talent-tab active"></div>
+      <div id="talent-tab-orders" class="talent-tab"></div>
+      <div id="talent-tab-profile" class="talent-tab"></div>
+      <div id="talent-tab-earnings" class="talent-tab"></div>
+    </div>
   </div>
 </div>
 
@@ -678,4 +720,5 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
