@@ -1,32 +1,133 @@
 'use strict';
 
-// ── PHOTO MAPPING dari Google Drive ──
-// Folder Wanita: https://drive.google.com/drive/folders/1f45BbsmdGuTKjgiyz75H9wGbDEVWDhQB
-// Folder Pria:   https://drive.google.com/drive/folders/1lXAU4agkP_xI-xzvjGFG8OBsErQMc4o-
+// ══════════════════════════════════════════════════════
+//  FOTO TALENT — Google Drive Thumbnail System
+//  Folder: https://drive.google.com/drive/folders/14BehenqbNI49ePtJcRI6Gm3HUuZqeugj
 //
-// CARA ISI FOTO:
-// 1. Buka folder Google Drive
-// 2. Klik kanan foto → "Get link" → pastikan "Anyone with the link"
-// 3. Copy FILE_ID dari URL: drive.google.com/file/d/FILE_ID/view
-// 4. Tempel di bawah: GDRIVE_BASE + 'FILE_ID_KAMU' + GDRIVE_SZ
+//  CARA ISI FILE_ID:
+//  1. Buka Google Drive folder di atas
+//  2. Klik kanan foto → "Bagikan" → pastikan "Siapa saja yang memiliki link"
+//  3. Salin link, ambil bagian: drive.google.com/file/d/FILE_ID/view
+//  4. Tempel FILE_ID di bawah, ganti placeholder 'ISI_FILE_ID_DI_SINI'
+// ══════════════════════════════════════════════════════
 
-const GDRIVE_BASE = 'https://drive.google.com/thumbnail?id=';
-const GDRIVE_SZ = '&sz=w400';
+const G = id => id ? `https://drive.google.com/thumbnail?id=${id}&sz=w600` : null;
 
-// Ganti null dengan: GDRIVE_BASE + 'FILE_ID' + GDRIVE_SZ
-const TALENT_PHOTOS = {
-  't001': { main: null, gallery: [null, null, null] }, // Ara Salsabila (cewe)
-  't002': { main: null, gallery: [null, null, null] }, // Nara Putri (cewe)
-  't003': { main: null, gallery: [null, null, null] }, // Dira Cantika (cewe)
-  't004': { main: null, gallery: [null, null, null] }, // Luna Safira (cewe)
-  't005': { main: null, gallery: [null, null, null] }, // Reva Anindita (cewe)
-  't006': { main: null, gallery: [null, null, null] }, // Zara Najwa (cewe)
-  't007': { main: null, gallery: [null, null, null] }, // Sari Melati (cewe)
-  't008': { main: null, gallery: [null, null, null] }, // Kaia Rizky (cewe)
-  't009': { main: null, gallery: [null, null, null] }, // Kira Mahesa (cowo)
-  't010': { main: null, gallery: [null, null, null] }, // Dani Pratama (cowo)
-  't011': { main: null, gallery: [null, null, null] }, // Rio Ardiansyah (cowo)
+// ── MAPPING FOTO PER TALENT ──
+// Isi FILE_ID dari Google Drive untuk setiap talent
+// Satu talent bisa punya banyak foto (main + gallery)
+const PHOTO_IDS = {
+  // ─────────────── TALENT CEWE ───────────────
+  't001': { // Ara Salsabila
+    main: null,                        // ← isi FILE_ID foto utama
+    gallery: [null, null, null]        // ← isi FILE_ID foto galeri (max 3)
+  },
+  't002': { // Nara Putri
+    main: null,
+    gallery: [null, null, null]
+  },
+  't003': { // Dira Cantika
+    main: null,
+    gallery: [null, null, null]
+  },
+  't004': { // Luna Safira
+    main: null,
+    gallery: [null, null, null]
+  },
+  't005': { // Reva Anindita
+    main: null,
+    gallery: [null, null, null]
+  },
+  't006': { // Zara Najwa
+    main: null,
+    gallery: [null, null, null]
+  },
+  't007': { // Sari Melati
+    main: null,
+    gallery: [null, null, null]
+  },
+  't008': { // Kaia Rizky
+    main: null,
+    gallery: [null, null, null]
+  },
+  // ─────────────── TALENT COWO ───────────────
+  't009': { // Kira Mahesa
+    main: null,
+    gallery: [null, null, null]
+  },
+  't010': { // Dani Pratama
+    main: null,
+    gallery: [null, null, null]
+  },
+  't011': { // Rio Ardiansyah
+    main: null,
+    gallery: [null, null, null]
+  },
 };
+
+// Konversi PHOTO_IDS ke URL lengkap
+const TALENT_PHOTOS = Object.fromEntries(
+  Object.entries(PHOTO_IDS).map(([id, p]) => [id, {
+    main:    G(p.main),
+    gallery: (p.gallery||[]).map(G)
+  }])
+);
+
+// ══════════════════════════════════════════════════════
+//  CUSTOM PHOTO STORAGE (upload / Google Drive link)
+//  Disimpan di localStorage per-talent, override PHOTO_IDS
+//  Format: { main: 'data:...' | 'url', gallery: ['url'|null, ...] }
+// ══════════════════════════════════════════════════════
+const getCustomPhotos = () => lsGet('lovia_custom_photos', {});
+const setCustomPhotos = d => lsSet('lovia_custom_photos', d);
+
+// Ambil semua foto custom untuk satu talent
+function getCustomPhotoData(talentId) {
+  const all = getCustomPhotos();
+  return all[talentId] || { main: null, gallery: [null, null] };
+}
+
+// Simpan foto custom untuk satu talent
+function saveCustomPhotoData(talentId, data) {
+  const all = getCustomPhotos();
+  all[talentId] = data;
+  setCustomPhotos(all);
+}
+
+// Ekstrak File ID dari berbagai format Google Drive URL
+function extractDriveId(input) {
+  if (!input) return null;
+  input = input.trim();
+  // Format: /file/d/ID/view atau /d/ID
+  let m = input.match(/\/(?:file\/d|d)\/([a-zA-Z0-9_-]{20,})/);
+  if (m) return m[1];
+  // Format: id=ID
+  m = input.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
+  if (m) return m[1];
+  // Kalau sudah berupa ID langsung (20+ chars, no slashes)
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(input)) return input;
+  return null;
+}
+
+// Konversi Drive link / ID ke thumbnail URL
+function driveUrlFromInput(input) {
+  if (!input) return null;
+  const id = extractDriveId(input);
+  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+  // Jika sudah URL lengkap (non-drive), kembalikan langsung
+  if (input.startsWith('http')) return input;
+  return null;
+}
+
+// ── RUNTIME: coba load foto dari Drive, update image jika berhasil ──
+function tryLoadPhoto(imgEl, fallbackEl, url) {
+  if (!url || !imgEl) { if(fallbackEl) fallbackEl.style.display='flex'; return; }
+  imgEl.onload  = () => { imgEl.style.display='block'; if(fallbackEl) fallbackEl.style.display='none'; };
+  imgEl.onerror = () => { imgEl.style.display='none'; if(fallbackEl) fallbackEl.style.display='flex'; };
+  imgEl.src = url;
+}
+
+
 
 const TALENT_GRADIENTS = {
   't001': ['#fce4ed','#e8a4c0'], 't002': ['#ede4fc','#b0a0e8'],
@@ -38,10 +139,29 @@ const TALENT_GRADIENTS = {
 };
 
 function getTalentPhotoUrl(id) {
-  const p = TALENT_PHOTOS[id]; return p && p.main ? p.main : null;
+  // Cek custom photo dulu (diupload oleh talent)
+  const custom = getCustomPhotoData(id);
+  if (custom.main) return custom.main;
+  // Fallback ke PHOTO_IDS (Google Drive static)
+  const p = TALENT_PHOTOS[id];
+  return (p && p.main) ? p.main : null;
 }
 function getTalentGallery(id) {
-  const p = TALENT_PHOTOS[id]; return p ? p.gallery : [null,null,null];
+  // Custom gallery (2 slot), merge dengan static gallery
+  const custom = getCustomPhotoData(id);
+  const customGallery = custom.gallery || [null, null];
+  const staticP = TALENT_PHOTOS[id];
+  const staticGallery = (staticP && staticP.gallery) ? staticP.gallery : [null, null];
+  // Gabungkan: custom gallery [0,1] + static [0] jika ada
+  return [
+    customGallery[0] || staticGallery[0] || null,
+    customGallery[1] || staticGallery[1] || null,
+  ];
+}
+// Render img tag dengan fallback otomatis ke emoji
+function photoImgTag(url, name, extraStyle) {
+  if (!url) return '';
+  return `<img src="${url}" alt="${name||''}" style="width:100%;height:100%;object-fit:cover;display:block;${extraStyle||''}" loading="lazy" onerror="this.style.display='none';var n=this.nextElementSibling;if(n&&n.classList&&n.classList.contains('talent-avatar-fallback'))n.style.display='flex';">`;
 }
 
 // ── STATE ──
@@ -60,19 +180,99 @@ const getPricelist=()=>lsGet('lovia_pricelist',DEFAULT_PRICELIST);
 const setPricelist=d=>lsSet('lovia_pricelist',d);
 
 const DEFAULT_TALENTS=[
-  // ── TALENT CEWE (Perempuan) ──
-  {id:'t001',name:'Ara Salsabila',nickname:'Ara',age:22,gender:'Perempuan',location:'Jakarta',bio:'Hii, aku Ara! Suka ngobrol, nonton film, dan kulineran. Orangnya humoris dan easygoing. Dijamin gak bakal bosen ngobrol sama aku 💕',hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,username:'talent01',password:'talent123'},
-  {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',bio:'Music lover & gaming enthusiast! Yuk mabar bareng atau sekadar dengerin curhat. Aku teman ngobrol yang gak pernah boring 🎵',hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',ig:'@naraputri_',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
-  {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu! Suka cafe hopping & travel. Offline date ke mana aja, aku siap! 🌺',hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,username:'dira01',password:'dira123'},
-  {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',bio:'Introvert tapi asik banget diajak ngobrol. Suka sastra, kopi hangat, dan hujan. Deep conversation adalah hal favoritku 🌙',hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],schedule:['Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,username:'luna01',password:'luna123'},
-  {id:'t005',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',bio:'Aktris teater yang punya segudang cerita seru! Yuk ngobrol dan temukan warna baru dalam hidupmu 🎭',hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',ig:'@reva.anindita',tiktok:'@reva_art',verified:true,username:'reva01',password:'reva123'},
-  {id:'t006',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',bio:'Foodie sejati! Selalu tau tempat makan enak yang lagi hits. Asik banget buat teman jalan & konten bareng 🍜',hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Malam (20-24)'],rating:4.6,bookings:97,price:'26K',status:'online',avatar:'🍜',ig:'@zara.najwa',tiktok:'@zara_food',verified:true,username:'zara01',password:'zara123'},
-  {id:'t007',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',bio:'Pecinta kopi & buku. Deep conversation adalah hal yang paling aku suka. Ayo ngobrol sambil nongkrong! ☕',hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],schedule:['Pagi (06-12)','Sore (17-20)'],rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,username:'sari01',password:'sari123'},
-  {id:'t008',name:'Kaia Rizky',nickname:'Kaia',age:20,gender:'Perempuan',location:'Jakarta',bio:'Dancer & content creator! Energi positif 24/7. Seru banget buat teman ngobrol soal apapun — fashion, lifestyle, atau sekadar ketawa bareng 🦋',hobbies:'Dance, Content Creation, Fashion',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Malam (20-24)'],rating:4.7,bookings:163,price:'26K',status:'online',avatar:'🦋',ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,username:'kaia01',password:'kaia123'},
-  // ── TALENT COWO (Laki-laki) ──
-  {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
-  {id:'t010',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,username:'dani01',password:'dani123'},
-  {id:'t011',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',bio:'Fotografer & traveler dengan seribu cerita! Yuk cerita soal perjalanan atau foto bareng jalan-jalan 📸',hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,username:'rio01',password:'rio123'},
+  // ══════════════════════════════════════
+  // TALENT CEWE (Perempuan) — Folder Drive
+  // ══════════════════════════════════════
+  {id:'t001',name:'Ara Salsabila',nickname:'Ara',age:22,gender:'Perempuan',location:'Jakarta',
+   bio:'Hii, aku Ara! Suka ngobrol, nonton film, dan kulineran. Orangnya humoris dan easygoing. Dijamin gak bakal bosen ngobrol sama aku 💕',
+   hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
+   schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],
+   rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',
+   ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,
+   username:'ara01',password:'ara123'},
+
+  {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',
+   bio:'Music lover & gaming enthusiast! Yuk mabar bareng atau sekadar dengerin curhat. Aku teman ngobrol yang gak pernah boring 🎵',
+   hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],
+   schedule:['Pagi (06-12)','Malam (20-24)'],
+   rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',
+   ig:'@naraputri_',tiktok:'@nara.music',verified:true,
+   username:'nara01',password:'nara123'},
+
+  {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',
+   bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu! Suka cafe hopping & travel. Offline date ke mana aja, aku siap! 🌺',
+   hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],
+   schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],
+   rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',
+   ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,
+   username:'dira01',password:'dira123'},
+
+  {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',
+   bio:'Introvert tapi asik banget diajak ngobrol. Suka sastra, kopi hangat, dan hujan. Deep conversation adalah hal favoritku 🌙',
+   hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],
+   schedule:['Sore (17-20)','Malam (20-24)'],
+   rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',
+   ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,
+   username:'luna01',password:'luna123'},
+
+  {id:'t005',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',
+   bio:'Aktris teater yang punya segudang cerita seru! Yuk ngobrol dan temukan warna baru dalam hidupmu 🎭',
+   hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
+   schedule:['Siang (12-17)','Sore (17-20)'],
+   rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',
+   ig:'@reva.anindita',tiktok:'@reva_art',verified:true,
+   username:'reva01',password:'reva123'},
+
+  {id:'t006',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',
+   bio:'Foodie sejati! Selalu tau tempat makan enak yang lagi hits. Asik banget buat teman jalan & konten bareng 🍜',
+   hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],
+   schedule:['Siang (12-17)','Malam (20-24)'],
+   rating:4.6,bookings:97,price:'26K',status:'online',avatar:'🍜',
+   ig:'@zara.najwa',tiktok:'@zara_food',verified:true,
+   username:'zara01',password:'zara123'},
+
+  {id:'t007',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',
+   bio:'Pecinta kopi & buku. Deep conversation adalah hal yang paling aku suka. Ayo ngobrol sambil nongkrong! ☕',
+   hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],
+   schedule:['Pagi (06-12)','Sore (17-20)'],
+   rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',
+   ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,
+   username:'sari01',password:'sari123'},
+
+  {id:'t008',name:'Kaia Rizky',nickname:'Kaia',age:20,gender:'Perempuan',location:'Jakarta',
+   bio:'Dancer & content creator! Energi positif 24/7. Seru banget buat teman ngobrol soal apapun — fashion, lifestyle, atau sekadar ketawa bareng 🦋',
+   hobbies:'Dance, Content Creation, Fashion',services:['Chatting','Calling','Video Call','Offline Date'],
+   schedule:['Siang (12-17)','Malam (20-24)'],
+   rating:4.7,bookings:163,price:'26K',status:'online',avatar:'🦋',
+   ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,
+   username:'kaia01',password:'kaia123'},
+
+  // ══════════════════════════════════════
+  // TALENT COWO (Laki-laki)
+  // ══════════════════════════════════════
+  {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',
+   bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',
+   hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],
+   schedule:['Pagi (06-12)','Malam (20-24)'],
+   rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',
+   ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,
+   username:'kira01',password:'kira123'},
+
+  {id:'t010',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',
+   bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',
+   hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],
+   schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],
+   rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',
+   ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,
+   username:'dani01',password:'dani123'},
+
+  {id:'t011',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',
+   bio:'Fotografer & traveler dengan seribu cerita! Yuk cerita soal perjalanan atau foto bareng jalan-jalan 📸',
+   hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],
+   schedule:['Siang (12-17)','Sore (17-20)'],
+   rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',
+   ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,
+   username:'rio01',password:'rio123'},
 ];
 
 const DEFAULT_TESTIMONIALS=[
@@ -232,14 +432,13 @@ function talentCard(t){
   const tc={'Chatting':'tag-chat','Calling':'tag-call','Video Call':'tag-vc','Offline Date':'tag-offline','Mabar':'tag-mabar'};
   const photoUrl=getTalentPhotoUrl(t.id);
   const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-  const imgContent=photoUrl
-    ?`<img src="${photoUrl}" alt="${t.name}" class="talent-real-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-    :``;
-  const fallback=`<div class="talent-avatar-fallback" style="background:linear-gradient(135deg,${grad[0]},${grad[1]});display:${photoUrl?'none':'flex'}"><span>${t.avatar}</span></div>`;
+  const fallbackStyle=`background:linear-gradient(135deg,${grad[0]},${grad[1]});display:${photoUrl?'none':'flex'}`;
 
   return `<div class="talent-card neon-hover" onclick="showTalentDetail('${t.id}')">
     <div class="talent-img">
-      ${imgContent}${fallback}
+      ${photoUrl?`<img src="${photoUrl}" alt="${t.name}" class="talent-real-photo" loading="lazy"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`:''}
+      <div class="talent-avatar-fallback" style="${fallbackStyle}"><span>${t.avatar}</span></div>
       <div class="talent-img-overlay"></div>
       <div class="talent-status ${sc[t.status]||'status-offline'}">${si[t.status]||t.status}</div>
       ${t.verified?'<div class="talent-verified-badge">✓ Verified</div>':''}
@@ -305,9 +504,11 @@ function showTalentDetail(id){
   const renderGalleryItem=(url,index)=>{
     const emojis=['✨','🌟','💫'];
     const bgs=[`linear-gradient(135deg,${grad[0]},${grad[1]})`,`linear-gradient(135deg,var(--purple-light),var(--pink-light))`,`linear-gradient(135deg,var(--peach-light),var(--cream))`];
+    const idx=index<0?0:index;
+    const bg=bgs[idx%3];
     return url
-      ?`<div class="gallery-img"><img src="${url}" alt="Foto ${index+1}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=font-size:2rem>${emojis[index%3]}</span>'"></div>`
-      :`<div class="gallery-img" style="background:${bgs[index%3]}"><span style="font-size:2rem">${emojis[index%3]}</span></div>`;
+      ?`<div class="gallery-img"><img src="${url}" alt="Foto ${idx+1}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'"></div>`
+      :`<div class="gallery-img gallery-img-empty" style="background:${bg}"><span style="font-size:2rem">${emojis[idx%3]}</span></div>`;
   };
 
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -347,13 +548,16 @@ function showTalentDetail(id){
           ${t.tiktok?`<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem"><i class="fab fa-tiktok"></i> ${t.tiktok}</div>`:''}
           <div style="font-weight:700;color:var(--pink-deep);font-size:1.2rem;margin:1rem 0 1.1rem">💰 Mulai <span style="font-family:var(--font-display)">${t.price}</span>/hari</div>
           <button class="btn-primary glow-btn" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="openBooking('${t.id}')"><i class="fas fa-calendar-plus"></i> Booking Sekarang</button>
-          <a href="https://wa.me/6281200000000?text=Halo,+saya+ingin+booking+${encodeURIComponent(t.name)}" target="_blank" class="btn-outline" style="width:100%;justify-content:center;display:flex"><i class="fab fa-whatsapp"></i> Tanya via WhatsApp</a>
+          <a href="https://wa.me/628988995637?text=Halo,+saya+ingin+booking+${encodeURIComponent(t.name)}" target="_blank" class="btn-outline" style="width:100%;justify-content:center;display:flex"><i class="fab fa-whatsapp"></i> Tanya via WhatsApp</a>
         </div>
       </div>
       <div class="td-main">
         <div class="td-info-card">
-          <div class="td-section-title">📸 Galeri</div>
-          <div class="gallery-grid">${galleryPhotos.map((url,i)=>renderGalleryItem(url,i)).join('')}</div>
+          <div class="td-section-title">📸 Galeri Foto</div>
+          <div class="gallery-grid">
+            ${renderGalleryItem(mainPhotoUrl,-1)}
+            ${galleryPhotos.map((url,i)=>renderGalleryItem(url,i)).join('')}
+          </div>
         </div>
         <div class="td-info-card">
           <div class="td-section-title">🛎️ Layanan Tersedia</div>
@@ -397,7 +601,7 @@ function renderPricelist(){
           <div class="pkg-items">${(pkg.items||[]).map(i=>`<div class="pkg-item">${i}</div>`).join('')}</div>
           <div style="display:flex;gap:.5rem;margin-top:.5rem">
             <button class="${pkg.featured?'btn-outline':'btn-primary'}" style="${pkg.featured?'border-color:#fff;color:#fff;':''}flex:1;justify-content:center" onclick="openBookingFromPrice('${pkg.label}','${pkg.price}')">Pesan</button>
-            <a href="https://wa.me/6281200000000?text=Mau+pesan+${encodeURIComponent(pkg.label)}" target="_blank" style="width:40px;height:40px;background:${pkg.featured?'rgba(255,255,255,.2)':'var(--pink-light)'};border-radius:50%;display:flex;align-items:center;justify-content:center;color:${pkg.featured?'#fff':'var(--pink-deep)'};font-size:1.1rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(pkg.label)}" target="_blank" style="width:40px;height:40px;background:${pkg.featured?'rgba(255,255,255,.2)':'var(--pink-light)'};border-radius:50%;display:flex;align-items:center;justify-content:center;color:${pkg.featured?'#fff':'var(--pink-deep)'};font-size:1.1rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
           </div>
         </div>`).join('')}</div>`
       :`<div class="price-cards-row">${items.map(item=>`
@@ -407,7 +611,7 @@ function renderPricelist(){
           <div class="price-item-price">Rp ${item.price}<small>/sesi</small></div>
           <div style="display:flex;gap:.4rem;margin-top:.75rem">
             <button class="btn-sm" style="flex:1;justify-content:center" onclick="openBookingFromPrice('${s.label} — ${item.label}','${item.price}')">Pesan</button>
-            <a href="https://wa.me/6281200000000?text=Mau+pesan+${encodeURIComponent(s.label+' '+item.label)}" target="_blank" style="width:34px;height:34px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:.9rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(s.label+' '+item.label)}" target="_blank" style="width:34px;height:34px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:.9rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
           </div>
         </div>`).join('')}</div>`}
     </div>`;
@@ -642,8 +846,55 @@ function renderAdminOverview(el){
 
 function renderAdminTalents(el){
   const talents=getTalents();
-  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Talent 👥</h2><div class="search-wrap" style="min-width:220px"><i class="fas fa-search"></i><input type="text" placeholder="Cari nama / kota..." oninput="adminSearchTalent(this.value)" /></div></div>
-    <div class="dash-section"><div class="table-scroll"><table class="admin-table"><thead><tr><th>Talent</th><th>Kota</th><th>Status</th><th>Rating</th><th>Verified</th><th>Pending</th><th>Aksi</th></tr></thead><tbody id="adminTalentRows">${buildTalentRows(talents)}</tbody></table></div></div>`;
+  // Pisahkan cewe dan cowo
+  const cewe=talents.filter(t=>t.gender==='Perempuan');
+  const cowo=talents.filter(t=>t.gender==='Laki-laki');
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+      <h2 style="font-family:var(--font-display)">Kelola Talent 👥</h2>
+      <div class="search-wrap" style="min-width:220px"><i class="fas fa-search"></i><input type="text" placeholder="Cari nama / kota..." oninput="adminSearchTalent(this.value)" /></div>
+    </div>
+    <div class="dash-section">
+      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Talent</th><th>Kota</th><th>Status</th><th>Rating</th><th>Verified</th><th>Pending</th><th>Aksi</th></tr></thead><tbody id="adminTalentRows">${buildTalentRows(talents)}</tbody></table></div>
+    </div>
+
+    <!-- AKUN LOGIN TALENT -->
+    <div class="dash-section" style="margin-top:1.5rem">
+      <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1rem">🔐 Akun Login Talent — RAHASIA</h3>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1rem">Jangan bagikan ke siapapun selain talent yang bersangkutan.</p>
+
+      <h4 style="font-size:.85rem;font-weight:700;color:var(--pink-deep);margin-bottom:.6rem">👧 Talent Cewe</h4>
+      <div class="table-scroll" style="margin-bottom:1.25rem">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+          <tbody>
+            ${cewe.map((t,i)=>`<tr>
+              <td style="color:var(--text-muted);font-size:.78rem">${i+1}</td>
+              <td><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.nickname||t.name}</small></td>
+              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td>
+              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td>
+              <td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="font-size:.85rem;font-weight:700;color:var(--purple);margin-bottom:.6rem">👦 Talent Cowo</h4>
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+          <tbody>
+            ${cowo.map((t,i)=>`<tr>
+              <td style="color:var(--text-muted);font-size:.78rem">${i+1}</td>
+              <td><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.nickname||t.name}</small></td>
+              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td>
+              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td>
+              <td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 function buildTalentRows(talents){
@@ -655,7 +906,14 @@ function buildTalentRows(talents){
   }).join('');
 }
 
-function adminSearchTalent(q){const r=document.getElementById('adminTalentRows');if(r)r.innerHTML=buildTalentRows(getTalents().filter(t=>t.name.toLowerCase().includes(q.toLowerCase())||t.location.toLowerCase().includes(q.toLowerCase())));}
+function adminSearchTalent(q){
+  const r=document.getElementById('adminTalentRows');
+  if(r)r.innerHTML=buildTalentRows(getTalents().filter(t=>
+    t.name.toLowerCase().includes(q.toLowerCase())||
+    t.location.toLowerCase().includes(q.toLowerCase())||
+    (t.gender||'').toLowerCase().includes(q.toLowerCase())
+  ));
+}
 
 function renderAdminOrders(el){
   el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pesanan 📦</h2><select onchange="filterAdminOrders(this.value)" style="padding:.45rem .85rem;border:1px solid var(--border);border-radius:50px;background:var(--bg);color:var(--text);font-size:.83rem"><option value="">Semua Status</option><option>Menunggu</option><option>Aktif</option><option>Selesai</option><option>Ditolak</option></select></div>
@@ -771,6 +1029,7 @@ function renderTalentOverview(el,t){
         <div style="display:flex;flex-direction:column;gap:.6rem">
           <button class="btn-sm" onclick="showTalentTab('orders')" style="justify-content:flex-start;gap:.6rem"><i class="fas fa-calendar-check"></i> Lihat Booking</button>
           <button class="btn-sm" onclick="showTalentTab('profile')" style="justify-content:flex-start;gap:.6rem"><i class="fas fa-user-edit"></i> Edit Profil</button>
+          <button class="btn-sm" onclick="showTalentTab('profile')" style="justify-content:flex-start;gap:.6rem;border-color:var(--pink);color:var(--pink-deep)"><i class="fas fa-camera"></i> Kelola Foto</button>
           <button class="btn-sm" onclick="showTalentTab('earnings')" style="justify-content:flex-start;gap:.6rem"><i class="fas fa-wallet"></i> Pendapatan</button>
           <button class="btn-sm" onclick="toggleTalentStatus('${t.id}')" style="justify-content:flex-start;gap:.6rem;${t.status==='online'?'border-color:#ef4444;color:#ef4444':'border-color:#48bb78;color:#48bb78'}">${t.status==='online'?'<i class="fas fa-moon"></i> Set Offline':'<i class="fas fa-circle"></i> Set Online'}</button>
         </div>
@@ -793,34 +1052,185 @@ function renderTalentOrders(el,t){
 
 function renderTalentProfile(el,t){
   if(!t){el.innerHTML='<p>Data tidak ditemukan</p>';return;}
-  const photoUrl=getTalentPhotoUrl(t.id);const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
+  const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
+  const photoUrl=getTalentPhotoUrl(t.id);
+  const gallery=getTalentGallery(t.id);
+
+  // Buat slot foto helper
+  const photoSlot=(url,slotType,slotIdx)=>{
+    const isMain=slotType==='main';
+    const label=isMain?'Foto Profil (Utama)':('Galeri Foto '+(slotIdx+1));
+    const idSuffix=isMain?'main':('gal'+slotIdx);
+    return `
+    <div class="photo-slot" id="slot-${idSuffix}-${t.id}">
+      <div class="photo-slot-label">${isMain?'🖼️':'📸'} ${label}</div>
+      <div class="photo-slot-preview" id="preview-${idSuffix}-${t.id}">
+        ${url
+          ?`<img src="${url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>${t.avatar}</div>'">
+             <button class="photo-slot-del" onclick="deleteSlotPhoto('${t.id}','${slotType}',${isMain?-1:slotIdx})" title="Hapus foto">
+               <i class='fas fa-trash'></i>
+             </button>`
+          :`<div class="photo-slot-empty">${isMain?t.avatar:'+'}</div>`
+        }
+      </div>
+      <div class="photo-slot-actions">
+        <label class="photo-upload-btn" title="Upload file PNG/JPG">
+          <i class="fas fa-upload"></i> Upload File
+          <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp"
+            style="display:none"
+            onchange="handlePhotoFileUpload(event,'${t.id}','${slotType}',${isMain?-1:slotIdx})">
+        </label>
+        <button class="photo-link-btn" onclick="showDriveLinkInput('${t.id}','${slotType}',${isMain?-1:slotIdx})">
+          <i class="fab fa-google-drive"></i> Google Drive
+        </button>
+      </div>
+      <div class="photo-drive-input" id="drive-input-${idSuffix}-${t.id}" style="display:none">
+        <input type="text" id="drive-url-${idSuffix}-${t.id}"
+          placeholder="Paste link Google Drive atau File ID..."
+          style="width:100%;padding:.55rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.82rem">
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button class="btn-sm" style="flex:1;justify-content:center"
+            onclick="applyDriveLink('${t.id}','${slotType}',${isMain?-1:slotIdx})">
+            <i class="fas fa-check"></i> Terapkan
+          </button>
+          <button class="btn-sm" style="flex:1;justify-content:center"
+            onclick="document.getElementById('drive-input-${idSuffix}-${t.id}').style.display='none'">
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>`;
+  };
+
   el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Edit Profil ✏️</h2>
+
+    <!-- ─── FOTO MANAGEMENT ─── -->
+    <div class="dash-section" style="margin-bottom:1.5rem">
+      <h3 style="font-size:1rem;margin-bottom:.5rem">📸 Kelola Foto</h3>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem">Upload PNG/JPG dari perangkat atau tempel link Google Drive. 1 foto profil + 2 foto galeri publik.</p>
+      <div class="photo-slots-grid">
+        ${photoSlot(photoUrl,'main',-1)}
+        ${photoSlot(gallery[0],'gallery',0)}
+        ${photoSlot(gallery[1],'gallery',1)}
+      </div>
+    </div>
+
+    <!-- ─── INFO & KREDENSIAL ─── -->
     <div class="admin-2col-grid">
       <div class="dash-section">
-        <div style="text-align:center;padding:1.5rem;background:linear-gradient(135deg,var(--pink-light),var(--purple-light));border-radius:var(--radius);margin-bottom:1.25rem">
-          <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;margin:0 auto .75rem;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center">
-            ${photoUrl?`<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:2.5rem">${t.avatar}</span>`}
+        <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--pink-light),var(--purple-light));border-radius:var(--radius);margin-bottom:1.25rem">
+          <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;margin:0 auto .6rem;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center">
+            ${photoUrl?`<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:''}
+            <span style="font-size:2.2rem${photoUrl?';display:none':''}">${t.avatar}</span>
           </div>
           <h3 style="font-family:var(--font-display)">${t.name}</h3>
-          <p style="color:var(--text-muted);font-size:.82rem;margin:.3rem 0">${t.location} · ${t.gender} · ${t.age} thn</p>
+          <p style="color:var(--text-muted);font-size:.8rem;margin:.3rem 0">${t.location} · ${t.gender} · ${t.age} thn</p>
           <span class="status-badge ${t.verified?'badge-active':'badge-pending'}">${t.verified?'✓ Verified':'⏳ Menunggu'}</span>
         </div>
-        <h3 style="font-size:.95rem;margin-bottom:.75rem">🔐 Kredensial Login</h3>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.85rem;font-size:.83rem">
+        <h3 style="font-size:.9rem;margin-bottom:.65rem">🔐 Kredensial Login</h3>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;font-size:.82rem">
           <div style="margin-bottom:.4rem">Username: <strong>${t.username}</strong></div>
           <div>Password: <strong>${t.password}</strong></div>
         </div>
-        <p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem">⚠️ Simpan data login dengan aman</p>
+        <p style="font-size:.73rem;color:var(--text-muted);margin-top:.4rem">⚠️ Simpan data login dengan aman</p>
       </div>
       <div class="dash-section">
         <h3 style="font-size:.95rem;margin-bottom:1rem">📝 Edit Info</h3>
-        <div class="form-group"><label>Bio</label><textarea rows="3" id="editBio" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical">${t.bio}</textarea></div>
-        <div class="form-group" style="margin-top:.75rem"><label>Hobi</label><input type="text" id="editHobi" value="${t.hobbies||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem"/></div>
-        <div class="form-group" style="margin-top:.75rem"><label>Instagram</label><input type="text" id="editIg" value="${t.ig||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem"/></div>
-        <div class="form-group" style="margin-top:.75rem"><label>TikTok</label><input type="text" id="editTiktok" value="${t.tiktok||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem"/></div>
-        <button class="btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center" onclick="saveTalentProfile('${t.id}')"><i class="fas fa-save"></i> Simpan Perubahan</button>
+        <div class="form-group"><label>Bio</label>
+          <textarea rows="3" id="editBio" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical">${t.bio}</textarea>
+        </div>
+        <div class="form-group" style="margin-top:.75rem"><label>Hobi</label>
+          <input type="text" id="editHobi" value="${t.hobbies||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
+        </div>
+        <div class="form-group" style="margin-top:.75rem"><label>Instagram</label>
+          <input type="text" id="editIg" value="${t.ig||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
+        </div>
+        <div class="form-group" style="margin-top:.75rem"><label>TikTok</label>
+          <input type="text" id="editTiktok" value="${t.tiktok||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
+        </div>
+        <button class="btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center" onclick="saveTalentProfile('${t.id}')">
+          <i class="fas fa-save"></i> Simpan Perubahan
+        </button>
       </div>
     </div>`;
+}
+
+// ── PHOTO SLOT HELPERS ──
+function showDriveLinkInput(talentId,slotType,slotIdx){
+  const suffix=slotType==='main'?'main':('gal'+slotIdx);
+  const el=document.getElementById(`drive-input-${suffix}-${talentId}`);
+  if(el){el.style.display=el.style.display==='none'?'block':'none';}
+}
+
+function handlePhotoFileUpload(event,talentId,slotType,slotIdx){
+  const file=event.target.files[0];if(!file)return;
+  if(!file.type.match(/image\/(png|jpeg|jpg|webp)/)){toast('Format tidak didukung! Gunakan PNG/JPG/WEBP','error');return;}
+  if(file.size>5*1024*1024){toast('Ukuran file max 5MB!','error');return;}
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const dataUrl=e.target.result;
+    applyPhotoToSlot(talentId,slotType,slotIdx,dataUrl);
+    toast('📸 Foto berhasil diupload!','success');
+  };
+  reader.onerror=()=>toast('Gagal membaca file!','error');
+  reader.readAsDataURL(file);
+}
+
+function applyDriveLink(talentId,slotType,slotIdx){
+  const suffix=slotType==='main'?'main':('gal'+slotIdx);
+  const inputEl=document.getElementById(`drive-url-${suffix}-${talentId}`);
+  if(!inputEl||!inputEl.value.trim()){toast('Masukkan link Google Drive!','error');return;}
+  const url=driveUrlFromInput(inputEl.value.trim());
+  if(!url){toast('Link tidak valid! Pastikan link Google Drive benar.','error');return;}
+  applyPhotoToSlot(talentId,slotType,slotIdx,url);
+  const driveInput=document.getElementById(`drive-input-${suffix}-${talentId}`);
+  if(driveInput)driveInput.style.display='none';
+  toast('🔗 Foto Google Drive diterapkan!','success');
+}
+
+function applyPhotoToSlot(talentId,slotType,slotIdx,url){
+  const data=getCustomPhotoData(talentId);
+  if(slotType==='main'){
+    data.main=url;
+  } else {
+    if(!data.gallery)data.gallery=[null,null];
+    data.gallery[slotIdx]=url;
+  }
+  saveCustomPhotoData(talentId,data);
+  // Refresh preview
+  const suffix=slotType==='main'?'main':('gal'+slotIdx);
+  const previewEl=document.getElementById(`preview-${suffix}-${talentId}`);
+  if(previewEl){
+    previewEl.innerHTML=`<img src="${url}" alt="Foto" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>❌</div>'">
+      <button class="photo-slot-del" onclick="deleteSlotPhoto('${talentId}','${slotType}',${slotIdx})" title="Hapus foto">
+        <i class='fas fa-trash'></i>
+      </button>`;
+  }
+  // Also refresh all talent displays using this photo
+  refreshTalentPhotoDisplay(talentId);
+}
+
+function deleteSlotPhoto(talentId,slotType,slotIdx){
+  if(!confirm('Hapus foto ini?'))return;
+  const data=getCustomPhotoData(talentId);
+  if(slotType==='main'){data.main=null;}
+  else{if(data.gallery)data.gallery[slotIdx]=null;}
+  saveCustomPhotoData(talentId,data);
+  const suffix=slotType==='main'?'main':('gal'+slotIdx);
+  const previewEl=document.getElementById(`preview-${suffix}-${talentId}`);
+  const t=getTalents().find(x=>x.id===talentId);
+  if(previewEl)previewEl.innerHTML=`<div class="photo-slot-empty">${slotType==='main'?(t?t.avatar:'✨'):'+'}</div>`;
+  refreshTalentPhotoDisplay(talentId);
+  toast('Foto dihapus','info');
+}
+
+function refreshTalentPhotoDisplay(talentId){
+  // Refresh overview photo if visible
+  const overviewEl=document.getElementById('talent-tab-overview');
+  if(overviewEl&&overviewEl.classList.contains('active')){
+    const t=getTalents().find(x=>x.id===talentId);
+    if(t)renderTalentOverview(overviewEl,t);
+  }
 }
 
 function saveTalentProfile(id){
@@ -854,9 +1264,13 @@ function showNotifModal(msg,icon='🎉'){
 
 function toast(msg,type='info'){
   const c=document.getElementById('toastContainer');if(!c)return;
+  // Batasi max 3 toast sekaligus
+  while(c.children.length>=3)c.removeChild(c.firstChild);
   const el=document.createElement('div');el.className='toast '+type;
-  el.innerHTML=`<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||'ℹ️'}</span><span>${msg}</span>`;
-  c.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(120%)';el.style.transition='all .4s';setTimeout(()=>el.remove(),400);},3200);
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  el.innerHTML=`<span style="flex-shrink:0">${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><span onclick="this.parentElement.remove()" style="flex-shrink:0;cursor:pointer;opacity:.6;padding:.1rem .2rem;font-size:.85rem">✕</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(10px)';el.style.transition='all .35s';setTimeout(()=>el.remove(),350);},3000);
 }
 
 function toggleMusic(){
@@ -875,9 +1289,30 @@ function schedulePopup(){
 }
 
 function showPopup(icon,title,body){
+  // Jangan tampil popup jika ada modal yang terbuka
+  if(document.querySelector('.modal-overlay.open'))return;
   let p=document.getElementById('globalPopup');
-  if(!p){p=document.createElement('div');p.id='globalPopup';p.className='popup-notif';p.innerHTML=`<div class="popup-notif-header"><div class="popup-notif-title"><span id="pnIcon"></span><span id="pnTitle"></span></div><span class="popup-notif-close" onclick="this.parentElement.parentElement.classList.remove('show')">✕</span></div><p id="pnBody"></p>`;document.body.appendChild(p);}
+  if(!p){
+    p=document.createElement('div');
+    p.id='globalPopup';
+    p.className='popup-notif';
+    p.innerHTML=`
+      <div class="popup-notif-header">
+        <div class="popup-notif-title">
+          <span id="pnIcon"></span>
+          <span id="pnTitle"></span>
+        </div>
+        <button class="popup-notif-close" onclick="document.getElementById('globalPopup').classList.remove('show')" aria-label="Tutup">✕</button>
+      </div>
+      <p id="pnBody"></p>`;
+    document.body.appendChild(p);
+  }
   const pi=document.getElementById('pnIcon'),pt=document.getElementById('pnTitle'),pb=document.getElementById('pnBody');
-  if(pi)pi.textContent=icon+' ';if(pt)pt.textContent=title;if(pb)pb.textContent=body;
-  p.classList.add('show');setTimeout(()=>p.classList.remove('show'),5500);
+  if(pi)pi.textContent=icon+' ';
+  if(pt)pt.textContent=title;
+  if(pb)pb.textContent=body;
+  p.classList.add('show');
+  // Auto hide setelah 5 detik
+  clearTimeout(p._hideTimer);
+  p._hideTimer=setTimeout(()=>p.classList.remove('show'),5000);
 }
