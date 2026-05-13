@@ -1274,65 +1274,51 @@ function toast(msg,type='info'){
 }
 
 /* =========================================
-   MUSIC SYSTEM FIX
+   MUSIC SYSTEM
 ========================================= */
 
-let musicPlaying = false;
+const bgMusic = document.getElementById('bgMusic');
 
 function toggleMusic(){
 
-  // ambil audio SETELAH tombol diklik
-  const bgMusic = document.getElementById("bgMusic");
+  musicPlaying = !musicPlaying;
 
-  const icon = document.getElementById("musicIcon");
+  const icon = document.getElementById('musicIcon');
+  const btn  = document.getElementById('floatMusic');
 
-  const btn = document.getElementById("floatMusic");
+  if(musicPlaying){
 
-  // cek audio ditemukan atau tidak
-  if(!bgMusic){
-
-    console.error("Audio tidak ditemukan");
-
-    return;
-  }
-
-  // PLAY
-  if(!musicPlaying){
-
-    bgMusic.volume = 0.7;
-
+    // PLAY MUSIC
     bgMusic.play();
 
-    musicPlaying = true;
-
+    // GANTI ICON
     if(icon){
-      icon.className = "fas fa-pause";
+      icon.className = 'fas fa-pause';
     }
 
+    // ANIMASI BUTTON
     if(btn){
-      btn.classList.add("playing");
+      btn.classList.add('playing');
     }
 
-    toast("🎵 Music diputar","info");
+    toast('🎵 Ambient music diputar...','info');
 
-  }
+  }else{
 
-  // PAUSE
-  else{
-
+    // STOP MUSIC
     bgMusic.pause();
 
-    musicPlaying = false;
-
+    // RESET ICON
     if(icon){
-      icon.className = "fas fa-music";
+      icon.className = 'fas fa-music';
     }
 
+    // HAPUS ANIMASI
     if(btn){
-      btn.classList.remove("playing");
+      btn.classList.remove('playing');
     }
 
-    toast("🎵 Music dihentikan","info");
+    toast('🎵 Musik dimatikan','info');
   }
 }
 
