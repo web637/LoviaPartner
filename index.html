@@ -297,19 +297,20 @@
     <div class="filter-bar">
       <div class="search-wrap">
         <i class="fas fa-search"></i>
-        <input type="text" id="talentSearch" placeholder="Cari nama talent..." oninput="filterTalents()" />
+        <input type="text" id="searchTalent" placeholder="Cari nama talent..." oninput="renderTalents()" />
       </div>
-      <select id="filterGender" onchange="filterTalents()">
+      <select id="filterGender" onchange="renderTalents()">
         <option value="">Semua Gender</option>
         <option value="Perempuan">Perempuan</option>
         <option value="Laki-laki">Laki-laki</option>
       </select>
-      <select id="filterStatus" onchange="filterTalents()">
+      <select id="filterStatus" onchange="renderTalents()">
         <option value="">Semua Status</option>
         <option value="online">Online</option>
         <option value="offline">Offline</option>
+        <option value="busy">Sibuk</option>
       </select>
-      <select id="filterService" onchange="filterTalents()">
+      <select id="filterService" onchange="renderTalents()">
         <option value="">Semua Layanan</option>
         <option value="Chatting">Chatting</option>
         <option value="Calling">Calling</option>
@@ -317,7 +318,7 @@
         <option value="Offline Date">Offline Date</option>
         <option value="Mabar">Mabar</option>
       </select>
-      <select id="filterLocation" onchange="filterTalents()">
+      <select id="filterLocation" onchange="renderTalents()">
         <option value="">Semua Kota</option>
         <option value="Jakarta">Jakarta</option>
         <option value="Bandung">Bandung</option>
@@ -325,15 +326,19 @@
         <option value="Yogyakarta">Yogyakarta</option>
         <option value="Bali">Bali</option>
       </select>
+      <select id="sortTalent" onchange="renderTalents()">
+        <option value="">Urutkan</option>
+        <option value="rating">Rating Tertinggi</option>
+        <option value="bookings">Paling Populer</option>
+        <option value="name">Nama A-Z</option>
+      </select>
     </div>
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1rem">Menampilkan <strong><span id="talentCount">0</span> talent</strong></p>
     <div class="talent-grid" id="talentGrid"></div>
   </div>
 </div>
 
-<!-- ========== TALENT DETAIL PAGE ========== -->
-<div id="page-talent-detail" class="page">
-  <div class="container" id="talentDetailContent"></div>
-</div>
+<!-- talent-detail moved below -->
 
 <!-- ========== PRICELIST PAGE ========== -->
 <div id="page-pricelist" class="page">
@@ -522,6 +527,17 @@
   </div>
 </div>
 
+
+<!-- ========== TALENT DETAIL PAGE ========== -->
+<div id="page-talent-detail" class="page">
+  <div class="container" style="padding-top:2rem;padding-bottom:4rem">
+    <div style="margin-bottom:1.5rem">
+      <button class="btn-outline" onclick="showPage('talents')" style="gap:.5rem"><i class="fas fa-arrow-left"></i> Kembali ke Talent</button>
+    </div>
+    <div id="talentDetailContent"></div>
+  </div>
+</div>
+
 <!-- ========== ADMIN DASHBOARD ========== -->
 <div id="page-admin" class="page dashboard-page">
   <div class="dashboard-sidebar" id="adminSidebar">
@@ -662,3 +678,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
