@@ -1,4 +1,4 @@
-/* =============================================
+/*/* =============================================
    LOVIA PARTNER — Premium CSS 2026
    Aesthetic Soft Romantic Modern UI
    ============================================= */
@@ -597,15 +597,55 @@ ul{list-style:none}
 .shimmer-badge{background:linear-gradient(90deg,var(--pink-deep),var(--purple-deep),var(--pink-deep));background-size:200%;animation:shimmer 3s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
 /* ── MOBILE DASHBOARD ── */
-@media(max-width:768px){
-  .dashboard-page{flex-direction:column}
-  .dashboard-sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;padding:.5rem}
-  .db-nav{flex-direction:row;padding:.5rem;overflow-x:auto;gap:.25rem}
-  .db-link{padding:.5rem .75rem;font-size:.75rem;white-space:nowrap}
-  .db-link span{display:none}
-  .db-logout{margin:.5rem;padding:.5rem 1rem;font-size:.75rem}
-  .dashboard-content{padding:1rem}
+/* Desktop: sidebar selalu tampil */
+.db-hamburger{display:none;background:none;border:none;font-size:1.4rem;color:var(--text);cursor:pointer;padding:.4rem .6rem;border-radius:var(--radius-sm)}
+.db-hamburger:hover{background:var(--pink-light);color:var(--pink-deep)}
+.db-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1099;backdrop-filter:blur(2px)}
+.db-overlay.open{display:block}
+
+@media(max-width:900px){
+  /* Dashboard layout: header bar on top, content below */
+  .dashboard-page.active{flex-direction:column}
+  
+  /* Sidebar becomes drawer dari kiri */
+  .dashboard-sidebar{
+    position:fixed;left:-260px;top:0;bottom:0;width:260px;z-index:1100;
+    height:100vh;overflow-y:auto;
+    background:var(--bg-card);border-right:1px solid var(--border);
+    transition:left .3s cubic-bezier(0.4,0,0.2,1);
+    flex-direction:column;
+  }
+  .dashboard-sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.25)}
+  
+  /* Topbar di dashboard mobile */
+  .db-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.75rem 1rem;
+    background:var(--bg-card);border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100;gap:.75rem;
+  }
+  .db-topbar-title{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--pink-deep)}
+  .db-hamburger{display:flex;align-items:center;justify-content:center}
+  
+  /* Content full width */
+  .dashboard-content{padding:.75rem;width:100%;box-sizing:border-box}
+  
+  /* Sidebar nav stays vertical in drawer */
+  .db-nav{flex-direction:column;padding:.75rem;gap:.25rem;flex:1}
+  .db-link{padding:.75rem 1rem;font-size:.88rem;white-space:normal}
+  .db-link i{width:20px}
+  .db-logout{margin:1rem;padding:.7rem;font-size:.85rem}
+  .db-logo{padding:1rem 1.25rem;border-bottom:1px solid var(--border)}
+  
+  /* Grid adjustments */
   .dash-grid-4{grid-template-columns:1fr 1fr}
+  .admin-table{min-width:560px}
+}
+
+@media(max-width:480px){
+  .dash-grid-4{grid-template-columns:1fr}
+  .dashboard-content{padding:.5rem}
+  .db-topbar{padding:.6rem .75rem}
 }
 
 /* ── RESPONSIVE ── */
@@ -629,7 +669,6 @@ ul{list-style:none}
   .talent-grid{grid-template-columns:1fr}
   .filter-bar{flex-direction:column}
   .talent-detail-layout{grid-template-columns:1fr}
-  .dashboard-sidebar{display:none}
   .intro-cards{grid-template-columns:1fr}
   .form-grid{grid-template-columns:1fr}
   .schedule-grid{grid-template-columns:repeat(2,1fr)}
@@ -745,13 +784,7 @@ ul{list-style:none}
 
 /* ── DASHBOARD MOBILE ── */
 @media(max-width:768px){
-  .dashboard-page.active{flex-direction:column}
-  .dashboard-sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap}
-  .db-logo{padding:1rem;font-size:1.1rem;border-bottom:none;border-right:1px solid var(--border)}
-  .db-nav{flex-direction:row;flex:1;padding:.5rem;overflow-x:auto;gap:.25rem}
-  .db-link{padding:.5rem .75rem;font-size:.75rem;white-space:nowrap}
-  .db-logout{margin:.5rem;padding:.5rem;font-size:.75rem}
-  .dashboard-content{padding:1rem}
+  /* dashboard mobile handled above */
   .dash-grid-4{grid-template-columns:1fr 1fr}
   .talent-detail-layout{grid-template-columns:1fr}
   .schedule-grid{grid-template-columns:repeat(2,1fr)}
@@ -1024,3 +1057,183 @@ ul{list-style:none}
 .testi-name{font-weight:700;font-size:.9rem}
 .testi-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem}
 .testi-text{font-size:.84rem;color:var(--text-sec);font-style:italic;line-height:1.7}
+
+
+/* ══════════════════════════════════════
+   DASHBOARD MOBILE TOPBAR & DRAWER
+   ══════════════════════════════════════ */
+
+/* Desktop: topbar hidden */
+.db-topbar{display:none}
+
+/* Desktop: sidebar always visible, full height */
+@media(min-width:901px){
+  .dashboard-sidebar{
+    display:flex;flex-direction:column;
+    width:240px;flex-shrink:0;
+    background:var(--bg-card);border-right:1px solid var(--border);
+    position:sticky;top:0;height:100vh;
+  }
+  .db-nav{flex:1;padding:1rem .75rem;display:flex;flex-direction:column;gap:.25rem}
+  .db-logo{font-family:var(--font-display);font-size:1.3rem;font-weight:700;padding:1.5rem;border-bottom:1px solid var(--border)}
+  .db-logo span{color:var(--pink-deep);font-style:italic}
+  .db-link{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-radius:var(--radius-sm);font-size:.88rem;color:var(--text-sec);cursor:pointer;transition:var(--trans)}
+  .db-link:hover,.db-link.active{background:var(--pink-light);color:var(--pink-deep)}
+  .db-link i{width:18px;text-align:center}
+  .db-logout{margin:1rem;padding:.65rem;border-radius:var(--radius-sm);color:var(--text-muted);font-size:.85rem;border:1px solid var(--border);transition:var(--trans);display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;background:none}
+  .db-logout:hover{background:rgba(252,165,165,.15);color:#ef4444;border-color:#fc8181}
+  .dashboard-content{flex:1;overflow-y:auto;padding:2rem;background:var(--bg)}
+}
+
+/* Mobile drawer fixes */
+@media(max-width:900px){
+  /* Topbar visible on mobile */
+  .db-topbar{
+    display:flex;align-items:center;
+    padding:.7rem 1rem;gap:.75rem;
+    background:var(--bg-card);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:99;
+    box-shadow:var(--shadow-sm);
+  }
+  .db-topbar-title{
+    flex:1;font-family:var(--font-display);
+    font-size:1rem;font-weight:700;color:var(--pink-deep);
+  }
+  .db-topbar-user{
+    font-size:.78rem;color:var(--text-muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    max-width:120px;
+  }
+  /* Back to main site button in topbar */
+  .db-topbar .btn-home{
+    font-size:.75rem;padding:.3rem .65rem;
+    border:1px solid var(--border);border-radius:50px;
+    color:var(--text-muted);background:none;cursor:pointer;
+    white-space:nowrap;transition:var(--trans);
+  }
+  .db-topbar .btn-home:hover{border-color:var(--pink);color:var(--pink-deep)}
+
+  /* Sidebar is now a slide-in drawer */
+  .dashboard-sidebar{
+    display:flex;flex-direction:column;
+    position:fixed;left:-280px;top:0;bottom:0;
+    width:260px;z-index:1100;
+    height:100vh;overflow-y:auto;
+    background:var(--bg-card);
+    border-right:1px solid var(--border);
+    transition:left .3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow:none;
+  }
+  .dashboard-sidebar.open{
+    left:0;
+    box-shadow:6px 0 32px rgba(0,0,0,.22);
+  }
+
+  /* Drawer nav stays vertical */
+  .db-logo{font-family:var(--font-display);font-size:1.2rem;font-weight:700;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .db-logo span{color:var(--pink-deep);font-style:italic}
+  .db-logo-close{font-size:1.2rem;cursor:pointer;color:var(--text-muted);background:none;border:none;padding:.25rem;line-height:1}
+  .db-logo-close:hover{color:var(--text)}
+  .db-nav{flex:1;padding:.75rem;display:flex;flex-direction:column;gap:.2rem}
+  .db-link{display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;border-radius:var(--radius-sm);font-size:.9rem;color:var(--text-sec);cursor:pointer;transition:var(--trans);border:none;background:none;text-align:left;width:100%}
+  .db-link:hover,.db-link.active{background:var(--pink-light);color:var(--pink-deep)}
+  .db-link i{width:20px;text-align:center;flex-shrink:0}
+  .db-logout{margin:1rem;padding:.7rem;border-radius:var(--radius-sm);color:#ef4444;font-size:.85rem;border:1px solid rgba(252,165,165,.4);transition:var(--trans);display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;background:rgba(252,165,165,.08)}
+  .db-logout:hover{background:rgba(252,165,165,.18);border-color:#fc8181}
+}
+
+/* Overlay untuk tutup drawer */  
+.db-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:1099;
+  backdrop-filter:blur(1px);
+}
+.db-overlay.open{display:block}
+
+/* Hamburger button */
+.db-hamburger{
+  width:38px;height:38px;
+  display:none;
+  align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:none;cursor:pointer;
+  font-size:1.1rem;color:var(--text);
+  flex-shrink:0;transition:var(--trans);
+}
+.db-hamburger:hover{background:var(--pink-light);color:var(--pink-deep);border-color:var(--pink)}
+@media(max-width:900px){.db-hamburger{display:flex}}
+
+/* Mobile content area full width */
+@media(max-width:900px){
+  .dashboard-page.active{flex-direction:column;min-height:100vh}
+  .dashboard-content{flex:1;padding:.85rem;background:var(--bg);overflow-x:hidden}
+}
+@media(max-width:480px){
+  .dashboard-content{padding:.5rem}
+  .dash-grid-4{grid-template-columns:1fr!important}
+  .admin-table{font-size:.75rem}
+}
+
+/* Admin 2-col responsive grid */
+.admin-2col-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem}
+@media(max-width:640px){.admin-2col-grid{grid-template-columns:1fr}}
+.admin-2col-grid .dash-section:last-child[style*="grid-column:1/-1"]{grid-column:1/-1}
+
+/* Dashboard content responsive tables */
+@media(max-width:900px){
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius-sm)}
+  .admin-table{min-width:540px;font-size:.8rem}
+  .admin-table th,.admin-table td{padding:.5rem .65rem}
+}
+@media(max-width:480px){
+  .admin-2col-grid{grid-template-columns:1fr}
+  .price-cards-row{grid-template-columns:1fr 1fr}
+  .package-cards-row{grid-template-columns:1fr}
+  .dash-section{padding:1rem}
+  .dsc-val{font-size:1.4rem}
+}
+
+/* Dash section mobile padding */
+@media(max-width:900px){
+  .dash-section{padding:1rem}
+  .dash-stat-card{padding:1rem}
+  .dsc-icon{font-size:1.5rem}
+  .dsc-val{font-size:1.5rem}
+}
+
+/* Filter bar responsive */
+@media(max-width:768px){
+  .filter-bar{flex-direction:column;gap:.6rem}
+  .filter-bar select,.filter-bar input{width:100%}
+  .search-wrap{width:100%}
+  .search-wrap input{width:100%}
+}
+
+/* Talent detail layout on mobile */
+@media(max-width:768px){
+  .talent-detail-layout{grid-template-columns:1fr!important;gap:1rem}
+  .td-sidebar{position:relative!important;top:0!important}
+  .td-main-img{height:260px}
+  .schedule-grid{grid-template-columns:1fr 1fr}
+  .gallery-grid{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:480px){
+  .gallery-grid{grid-template-columns:1fr 1fr}
+  .schedule-grid{grid-template-columns:1fr 1fr}
+}
+
+/* Topbar logout button */
+.btn-home{
+  font-size:.75rem;padding:.35rem .7rem;
+  border:1px solid var(--border);border-radius:50px;
+  color:var(--text-muted);background:none;cursor:pointer;
+  white-space:nowrap;transition:var(--trans);
+  display:flex;align-items:center;gap:.35rem;
+}
+.btn-home:hover{border-color:#fc8181;color:#ef4444;background:rgba(252,165,165,.1)}
+.btn-home i{font-size:.7rem}
+
