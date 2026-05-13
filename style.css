@@ -83,12 +83,16 @@ ul{list-style:none}
 .loading-inner p{color:var(--text-muted);font-size:0.85rem}
 
 /* ── TOAST ── */
-.toast-container{position:fixed;bottom:2rem;right:2rem;z-index:9999;display:flex;flex-direction:column;gap:.75rem}
-.toast{padding:.85rem 1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);font-size:.875rem;min-width:260px;animation:slideInToast .4s ease;display:flex;align-items:center;gap:.75rem}
+.toast-container{position:fixed;bottom:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none;max-width:calc(100vw - 2rem)}
+.toast{padding:.7rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);font-size:.82rem;min-width:200px;max-width:280px;animation:slideInToast .4s ease;display:flex;align-items:center;gap:.6rem;pointer-events:auto;word-break:break-word}
 .toast.success{border-left:4px solid #68d391}
 .toast.error{border-left:4px solid #fc8181}
 .toast.info{border-left:4px solid var(--purple)}
-@keyframes slideInToast{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInToast{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:768px){
+  .toast-container{bottom:.75rem;right:.75rem;left:.75rem;align-items:flex-end}
+  .toast{min-width:0;max-width:100%;font-size:.8rem;padding:.6rem .85rem}
+}
 
 /* ── NAVBAR ── */
 .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;height:var(--navbar-h);transition:var(--trans)}
@@ -562,14 +566,8 @@ ul{list-style:none}
 .tag-offline{background:#fef3c7;color:#92400e}
 .tag-mabar{background:#d1fae5;color:#065f46}
 
-/* ── FLOATING NOTIFICATION POPUP ── */
-.popup-notif{position:fixed;top:5rem;right:1.5rem;z-index:9100;max-width:300px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-lg);animation:slideInNotif .4s ease;display:none}
-.popup-notif.show{display:block}
-@keyframes slideInNotif{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-.popup-notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
-.popup-notif-title{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:.4rem}
-.popup-notif-close{font-size:.8rem;color:var(--text-muted);cursor:pointer;padding:.2rem}
-.popup-notif p{font-size:.8rem;color:var(--text-sec)}
+/* ── FLOATING NOTIFICATION POPUP — see definition below ── */
+@keyframes slideInNotif{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* ── DASHBOARD MOBILE TOGGLE ── */
 .db-mobile-nav{display:none;background:var(--bg-card);border-bottom:1px solid var(--border);padding:.75rem 1rem;gap:.5rem;flex-wrap:wrap}
@@ -712,15 +710,7 @@ ul{list-style:none}
 .hero-title em::after{content:'|';animation:blink .75s step-end infinite;color:var(--pink-deep);font-style:normal}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
-/* ── POPUP NOTIFICATION ── */
-.popup-notif{position:fixed;top:5.5rem;right:1.5rem;z-index:9100;max-width:300px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-lg);animation:slideInNotif .4s ease;display:none;pointer-events:auto}
-.popup-notif.show{display:block}
-@keyframes slideInNotif{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-.popup-notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
-.popup-notif-title{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:.4rem}
-.popup-notif-close{font-size:.9rem;color:var(--text-muted);cursor:pointer;padding:.2rem .4rem;border-radius:4px;transition:var(--trans)}
-.popup-notif-close:hover{background:var(--border);color:var(--text)}
-.popup-notif p{font-size:.8rem;color:var(--text-sec);margin:0}
+/* ── POPUP NOTIFICATION — see canonical definition below ── */
 
 /* ── BOOKING STEP DOTS ── */
 .booking-progress{display:flex;gap:.5rem;margin-bottom:1.5rem;justify-content:center}
@@ -994,13 +984,19 @@ ul{list-style:none}
   .hero-stats{flex-wrap:wrap;gap:1rem}
 }
 
-/* FIX: Popup notif styling (was missing) */
-.popup-notif{position:fixed;bottom:7rem;right:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-lg);z-index:8000;max-width:280px;transform:translateX(120%);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);opacity:0}
+/* FIX: Popup notif styling - bottom right, safe from navbar & floating buttons */
+.popup-notif{position:fixed;bottom:7.5rem;right:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;box-shadow:var(--shadow-lg);z-index:8000;max-width:270px;width:calc(100vw - 2rem);transform:translateX(110%);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1),opacity .4s ease;opacity:0}
 .popup-notif.show{transform:translateX(0);opacity:1}
-.popup-notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
-.popup-notif-title{display:flex;align-items:center;gap:.4rem;font-weight:700;font-size:.88rem}
-.popup-notif-close{cursor:pointer;color:var(--text-muted);font-size:.9rem;line-height:1;padding:.1rem .3rem}
-.popup-notif p{font-size:.82rem;color:var(--text-sec);margin:0}
+.popup-notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.popup-notif-title{display:flex;align-items:center;gap:.4rem;font-weight:700;font-size:.85rem}
+.popup-notif-close{cursor:pointer;color:var(--text-muted);font-size:.85rem;line-height:1;padding:.2rem .4rem;border-radius:4px;background:var(--border)}
+.popup-notif p{font-size:.78rem;color:var(--text-sec);margin:0}
+@media(max-width:768px){
+  .popup-notif{right:.75rem;bottom:8rem;max-width:calc(100vw - 1.5rem)}
+}
+@media(max-width:480px){
+  .popup-notif{right:.5rem;left:.5rem;max-width:100%;bottom:7.5rem}
+}
 
 /* FIX: Price section improved layout */
 .price-filter-btn{padding:.45rem 1rem;border:1px solid var(--border);border-radius:50px;font-size:.82rem;background:var(--bg-card);color:var(--text-sec);cursor:pointer;transition:var(--trans);font-family:var(--font-body)}
@@ -1236,4 +1232,3 @@ ul{list-style:none}
 }
 .btn-home:hover{border-color:#fc8181;color:#ef4444;background:rgba(252,165,165,.1)}
 .btn-home i{font-size:.7rem}
-

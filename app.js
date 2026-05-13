@@ -15,24 +15,26 @@ const GDRIVE_SZ = '&sz=w400';
 
 // Ganti null dengan: GDRIVE_BASE + 'FILE_ID' + GDRIVE_SZ
 const TALENT_PHOTOS = {
-  't001': { main: null, gallery: [null, null, null] }, // Ara Salsabila (wanita)
-  't002': { main: null, gallery: [null, null, null] }, // Nara Putri (wanita)
-  't003': { main: null, gallery: [null, null, null] }, // Dira Cantika (wanita)
-  't004': { main: null, gallery: [null, null, null] }, // Luna Safira (wanita)
-  't005': { main: null, gallery: [null, null, null] }, // Kira Mahesa (pria)
-  't006': { main: null, gallery: [null, null, null] }, // Reva Anindita (wanita)
-  't007': { main: null, gallery: [null, null, null] }, // Zara Najwa (wanita)
-  't008': { main: null, gallery: [null, null, null] }, // Dani Pratama (pria)
-  't009': { main: null, gallery: [null, null, null] }, // Sari Melati (wanita)
-  't010': { main: null, gallery: [null, null, null] }, // Rio Ardiansyah (pria)
+  't001': { main: null, gallery: [null, null, null] }, // Ara Salsabila (cewe)
+  't002': { main: null, gallery: [null, null, null] }, // Nara Putri (cewe)
+  't003': { main: null, gallery: [null, null, null] }, // Dira Cantika (cewe)
+  't004': { main: null, gallery: [null, null, null] }, // Luna Safira (cewe)
+  't005': { main: null, gallery: [null, null, null] }, // Reva Anindita (cewe)
+  't006': { main: null, gallery: [null, null, null] }, // Zara Najwa (cewe)
+  't007': { main: null, gallery: [null, null, null] }, // Sari Melati (cewe)
+  't008': { main: null, gallery: [null, null, null] }, // Kaia Rizky (cewe)
+  't009': { main: null, gallery: [null, null, null] }, // Kira Mahesa (cowo)
+  't010': { main: null, gallery: [null, null, null] }, // Dani Pratama (cowo)
+  't011': { main: null, gallery: [null, null, null] }, // Rio Ardiansyah (cowo)
 };
 
 const TALENT_GRADIENTS = {
   't001': ['#fce4ed','#e8a4c0'], 't002': ['#ede4fc','#b0a0e8'],
   't003': ['#fce4f0','#f8a0c8'], 't004': ['#e4ecfc','#a0b0e8'],
-  't005': ['#e4fce8','#90d8a0'], 't006': ['#fce4f8','#d8a0e8'],
-  't007': ['#fce8e4','#f0a890'], 't008': ['#e4f8fc','#90c8d8'],
-  't009': ['#f8fce4','#c8d890'], 't010': ['#f8e4e4','#e09090'],
+  't005': ['#fce4f8','#d8a0e8'], 't006': ['#fce8e4','#f0a890'],
+  't007': ['#f8fce4','#c8d890'], 't008': ['#fce8f4','#e4a8d0'],
+  't009': ['#e4fce8','#90d8a0'], 't010': ['#e4f8fc','#90c8d8'],
+  't011': ['#f8e4e4','#e09090'],
 };
 
 function getTalentPhotoUrl(id) {
@@ -58,16 +60,19 @@ const getPricelist=()=>lsGet('lovia_pricelist',DEFAULT_PRICELIST);
 const setPricelist=d=>lsSet('lovia_pricelist',d);
 
 const DEFAULT_TALENTS=[
-  {id:'t001',name:'Ara Salsabila',nickname:'Ara',age:22,gender:'Perempuan',location:'Jakarta',bio:'Suka ngobrol, nonton film, dan kulineran. Aku orangnya humoris dan easygoing! Yuk cerita apapun 💕',hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',ig:'@ara.sal',tiktok:'@ara.salsabila',verified:true,username:'talent01',password:'talent123'},
-  {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',bio:'Music lover dan gaming enthusiast. Yuk mabar bareng! Teman ngobrol seru dan gak boring 🎵',hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',ig:'@naraputri',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
-  {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu. Offline date ke mana aja siap! 🌺',hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,username:'dira01',password:'dira123'},
-  {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',bio:'Introvert tapi asik diajak ngobrol. Suka sastra, kopi, dan hujan. Percakapan bermakna is my thing 🌙',hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],schedule:['Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',ig:'@luna.safira',tiktok:'@luna_writes',verified:true,username:'luna01',password:'luna123'},
-  {id:'t005',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',bio:'Pro gamer, bisa bantu carry rank kamu. Juga bisa jadi teman jalan yang asik dan seru! 🎮',hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
-  {id:'t006',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',bio:'Aktris teater, punya banyak cerita seru. Yuk ngobrol dan temukan warna baru dalam hidupmu! 🎭',hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',ig:'@reva.anin',tiktok:'@reva_art',verified:true,username:'reva01',password:'reva123'},
-  {id:'t007',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',bio:'Foodie banget! Selalu update tempat makan enak. Asik banget buat teman jalan! 🍜',hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Malam (20-24)'],rating:4.6,bookings:97,price:'26K',status:'busy',avatar:'🍜',ig:'@zara.najwa',tiktok:'@zara_food',verified:false,username:'zara01',password:'zara123'},
-  {id:'t008',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',ig:'@dani.prat',tiktok:'@dani_vibe',verified:true,username:'dani01',password:'dani123'},
-  {id:'t009',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',bio:'Pecinta kopi dan buku. Conversation bermakna adalah hal yang paling aku suka ☕',hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],schedule:['Pagi (06-12)','Sore (17-20)'],rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',ig:'@sari.mel',tiktok:'@sari_reads',verified:true,username:'sari01',password:'sari123'},
-  {id:'t010',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',bio:'Fotografer dan traveler. Yuk cerita perjalanan seru atau foto bareng jalan-jalan! 📸',hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',ig:'@rio.ardi',tiktok:'@rio_lens',verified:true,username:'rio01',password:'rio123'},
+  // ── TALENT CEWE (Perempuan) ──
+  {id:'t001',name:'Ara Salsabila',nickname:'Ara',age:22,gender:'Perempuan',location:'Jakarta',bio:'Hii, aku Ara! Suka ngobrol, nonton film, dan kulineran. Orangnya humoris dan easygoing. Dijamin gak bakal bosen ngobrol sama aku 💕',hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,username:'talent01',password:'talent123'},
+  {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',bio:'Music lover & gaming enthusiast! Yuk mabar bareng atau sekadar dengerin curhat. Aku teman ngobrol yang gak pernah boring 🎵',hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',ig:'@naraputri_',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
+  {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu! Suka cafe hopping & travel. Offline date ke mana aja, aku siap! 🌺',hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,username:'dira01',password:'dira123'},
+  {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',bio:'Introvert tapi asik banget diajak ngobrol. Suka sastra, kopi hangat, dan hujan. Deep conversation adalah hal favoritku 🌙',hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],schedule:['Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,username:'luna01',password:'luna123'},
+  {id:'t005',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',bio:'Aktris teater yang punya segudang cerita seru! Yuk ngobrol dan temukan warna baru dalam hidupmu 🎭',hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',ig:'@reva.anindita',tiktok:'@reva_art',verified:true,username:'reva01',password:'reva123'},
+  {id:'t006',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',bio:'Foodie sejati! Selalu tau tempat makan enak yang lagi hits. Asik banget buat teman jalan & konten bareng 🍜',hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Malam (20-24)'],rating:4.6,bookings:97,price:'26K',status:'online',avatar:'🍜',ig:'@zara.najwa',tiktok:'@zara_food',verified:true,username:'zara01',password:'zara123'},
+  {id:'t007',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',bio:'Pecinta kopi & buku. Deep conversation adalah hal yang paling aku suka. Ayo ngobrol sambil nongkrong! ☕',hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],schedule:['Pagi (06-12)','Sore (17-20)'],rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,username:'sari01',password:'sari123'},
+  {id:'t008',name:'Kaia Rizky',nickname:'Kaia',age:20,gender:'Perempuan',location:'Jakarta',bio:'Dancer & content creator! Energi positif 24/7. Seru banget buat teman ngobrol soal apapun — fashion, lifestyle, atau sekadar ketawa bareng 🦋',hobbies:'Dance, Content Creation, Fashion',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Siang (12-17)','Malam (20-24)'],rating:4.7,bookings:163,price:'26K',status:'online',avatar:'🦋',ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,username:'kaia01',password:'kaia123'},
+  // ── TALENT COWO (Laki-laki) ──
+  {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],schedule:['Pagi (06-12)','Malam (20-24)'],rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
+  {id:'t010',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,username:'dani01',password:'dani123'},
+  {id:'t011',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',bio:'Fotografer & traveler dengan seribu cerita! Yuk cerita soal perjalanan atau foto bareng jalan-jalan 📸',hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],schedule:['Siang (12-17)','Sore (17-20)'],rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,username:'rio01',password:'rio123'},
 ];
 
 const DEFAULT_TESTIMONIALS=[
@@ -876,4 +881,3 @@ function showPopup(icon,title,body){
   if(pi)pi.textContent=icon+' ';if(pt)pt.textContent=title;if(pb)pb.textContent=body;
   p.classList.add('show');setTimeout(()=>p.classList.remove('show'),5500);
 }
-
