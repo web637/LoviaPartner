@@ -177,15 +177,24 @@ function showPage(page){
   const floatMusic=document.getElementById('floatMusic');
   if(footer)footer.style.display=dash?'none':'block';
   if(navbar)navbar.style.display=dash?'none':'';
-  // FIX: Sembunyikan floating buttons di dashboard
   if(floatWa)floatWa.style.display=dash?'none':'';
   if(floatMusic)floatMusic.style.display=dash?'none':'';
-  window.scrollTo({top:0,behavior:'smooth'});
+  // Close any open drawer when navigating
+  closeDashSidebar('admin');
+  closeDashSidebar('talent');
+  document.body.style.overflow='';
+  if(!dash) window.scrollTo({top:0,behavior:'smooth'});
   const nl=document.getElementById('navLinks');if(nl)nl.classList.remove('open');
   if(page==='talents')renderSkeletonTalents();
   else if(page==='pricelist')renderPricelist();
-  else if(page==='admin'){if(!currentUser||currentUser.role!=='admin'){toast('Login sebagai admin dulu!','error');showLoginModal();return;}renderAdminDash();}
-  else if(page==='talent-dash'){if(!currentUser||currentUser.role!=='talent'){toast('Login sebagai talent dulu!','error');showLoginModal();return;}renderTalentDash();}
+  else if(page==='admin'){
+    if(!currentUser||currentUser.role!=='admin'){toast('Login sebagai admin dulu!','error');showLoginModal();return;}
+    renderAdminDash();
+  }
+  else if(page==='talent-dash'){
+    if(!currentUser||currentUser.role!=='talent'){toast('Login sebagai talent dulu!','error');showLoginModal();return;}
+    renderTalentDash();
+  }
   setTimeout(initScrollReveal,100);
 }
 
@@ -535,6 +544,32 @@ function submitRegister(){
   setTimeout(()=>showPage('landing'),3000);
 }
 
+
+// ── DASHBOARD DRAWER (Mobile) ──
+function openDashSidebar(type) {
+  const sidebar = document.getElementById(type === 'admin' ? 'adminSidebar' : 'talentSidebar');
+  const overlay = document.getElementById(type === 'admin' ? 'adminOverlay' : 'talentOverlay');
+  if (sidebar) sidebar.classList.add('open');
+  if (overlay) overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDashSidebar(type) {
+  const sidebar = document.getElementById(type === 'admin' ? 'adminSidebar' : 'talentSidebar');
+  const overlay = document.getElementById(type === 'admin' ? 'adminOverlay' : 'talentOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close drawer on ESC key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDashSidebar('admin');
+    closeDashSidebar('talent');
+  }
+});
+
 // ── AUTH ──
 function showLoginModal(){openModal('loginModal');}
 function handleLogin(){
@@ -546,16 +581,39 @@ function handleLogin(){
   if(t){if(t.pendingApproval&&!t.verified){toast('Akunmu masih dalam proses seleksi','error');return;}currentUser={role:'talent',name:t.name,talentId:t.id,username:t.username};lsSet('lovia_session',currentUser);closeModal('loginModal');toast(`Selamat datang, ${t.nickname||t.name}! ✨`,'success');setTimeout(()=>showPage('talent-dash'),500);return;}
   toast('Username atau password salah!','error');
 }
-function logout(){currentUser=null;localStorage.removeItem('lovia_session');toast('Berhasil logout! 👋','info');setTimeout(()=>showPage('landing'),300);}
+function logout(){
+  currentUser=null;
+  localStorage.removeItem('lovia_session');
+  closeDashSidebar('admin');
+  closeDashSidebar('talent');
+  document.body.style.overflow='';
+  toast('Berhasil logout! 👋','info');
+  setTimeout(()=>showPage('landing'),300);
+}
 
 // ── ADMIN ──
 function renderAdminDash(){showAdminTab('overview');}
 function showAdminTab(tab){
+  // Close drawer on mobile
+  closeDashSidebar('admin');
+  // Hide all tabs
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   const el=document.getElementById('admin-tab-'+tab);if(el)el.classList.add('active');
-  document.querySelectorAll('#adminSidebar .db-link').forEach((l,i)=>l.classList.toggle('active',['overview','talents','orders','pricelist','testimonials','settings'][i]===tab));
+  // Update active link
+  document.querySelectorAll('#adminSidebar .db-link').forEach(l=>{
+    const onclick=l.getAttribute('onclick')||'';
+    l.classList.toggle('active', onclick.includes("'"+tab+"'"));
+  });
   const c=document.getElementById('admin-tab-'+tab);if(!c)return;
-  if(tab==='overview')renderAdminOverview(c);else if(tab==='talents')renderAdminTalents(c);else if(tab==='orders')renderAdminOrders(c);else if(tab==='pricelist')renderAdminPricelist(c);else if(tab==='testimonials')renderAdminTestimonials(c);else if(tab==='settings')renderAdminSettings(c);
+  if(tab==='overview')renderAdminOverview(c);
+  else if(tab==='talents')renderAdminTalents(c);
+  else if(tab==='orders')renderAdminOrders(c);
+  else if(tab==='pricelist')renderAdminPricelist(c);
+  else if(tab==='testimonials')renderAdminTestimonials(c);
+  else if(tab==='settings')renderAdminSettings(c);
+  // Scroll content to top
+  const content=document.getElementById('adminContent');
+  if(content)content.scrollTop=0;
 }
 
 function renderAdminOverview(el){
@@ -571,7 +629,7 @@ function renderAdminOverview(el){
       <div class="dash-stat-card" style="border-top:3px solid #f59e0b"><div class="dsc-icon">📦</div><div class="dsc-val">${orders.length}</div><div class="dsc-label">Total Order</div></div>
       <div class="dash-stat-card" style="border-top:3px solid var(--purple-deep)"><div class="dsc-icon">⏳</div><div class="dsc-val">${pending.length}</div><div class="dsc-label">Pending Daftar</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="admin-2col-grid">
       <div class="dash-section"><h3>📋 Pendaftar Baru</h3>${pending.length?pending.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.4rem">${t.avatar}</span><div><strong style="font-size:.85rem">${t.name}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.location} · ${t.age}thn</div></div></div><div style="display:flex;gap:.3rem"><button class="btn-sm" onclick="approveTalent('${t.id}')" style="border-color:#48bb78;color:#48bb78;padding:.3rem .6rem">✓</button><button class="btn-sm" onclick="rejectTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444;padding:.3rem .6rem">✗</button></div></div>`).join(''):'<p style="color:var(--text-muted);font-size:.85rem">Tidak ada pendaftar baru</p>'}</div>
       <div class="dash-section"><h3>📈 Statistik Pesanan</h3><div style="font-size:.85rem;display:flex;flex-direction:column;gap:.5rem"><div style="display:flex;justify-content:space-between"><span>Menunggu</span><strong style="color:#d97706">${orders.filter(o=>o.status==='Menunggu').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Aktif</span><strong style="color:#059669">${orders.filter(o=>o.status==='Aktif').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Selesai</span><strong style="color:#2563eb">${orders.filter(o=>o.status==='Selesai').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Ditolak</span><strong style="color:#dc2626">${orders.filter(o=>o.status==='Ditolak').length}</strong></div></div></div>
     </div>`;
@@ -623,7 +681,7 @@ function deleteTestimonial(i){const ts=getTestimonials();ts.splice(i,1);setTesti
 
 function renderAdminSettings(el){
   el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pengaturan ⚙️</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="admin-2col-grid">
       <div class="dash-section"><h3>🔐 Akun Admin</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Username: <strong>admin</strong></div><div>Password: <strong>admin123</strong></div><div>Role: <strong>Super Admin</strong></div></div></div>
       <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Lovia Partner v2.1</strong></div><div>Storage: <strong>LocalStorage</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
       <div class="dash-section"><h3>🎨 Tema</h3><div style="display:flex;gap:.75rem"><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('lovia_theme','light');updateThemeIcon('light');toast('Terang aktif','info')">☀️ Terang</button><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('lovia_theme','dark');updateThemeIcon('dark');toast('Gelap aktif','info')">🌙 Gelap</button></div></div>
@@ -647,15 +705,35 @@ function toggleVerify(id){const t=getTalents();const i=t.findIndex(x=>x.id===id)
 function deleteTalent(id){if(!confirm('Hapus talent ini?'))return;setTalents(getTalents().filter(t=>t.id!==id));toast('Talent dihapus','info');renderAdminTalents(document.getElementById('admin-tab-talents'));}
 
 // ── TALENT DASHBOARD ──
-function renderTalentDash(){showTalentTab('overview');}
+function renderTalentDash(){
+  showTalentTab('overview');
+  // Update topbar user name
+  const tId = currentUser ? currentUser.talentId : null;
+  const t = tId ? getTalents().find(x => x.id === tId) : null;
+  const el = document.getElementById('talentTopbarUser');
+  if (el && t) el.textContent = (t.avatar || '✨') + ' ' + (t.nickname || t.name);
+}
 function showTalentTab(tab){
+  // Close drawer on mobile
+  closeDashSidebar('talent');
+  // Hide all tabs
   document.querySelectorAll('.talent-tab').forEach(t=>t.classList.remove('active'));
   const el=document.getElementById('talent-tab-'+tab);if(el)el.classList.add('active');
-  document.querySelectorAll('#talentSidebar .db-link').forEach((l,i)=>l.classList.toggle('active',['overview','orders','profile','earnings'][i]===tab));
+  // Update active link
+  document.querySelectorAll('#talentSidebar .db-link').forEach(l=>{
+    const onclick=l.getAttribute('onclick')||'';
+    l.classList.toggle('active', onclick.includes("'"+tab+"'"));
+  });
   const tId=currentUser?currentUser.talentId:null;
   const t=tId?getTalents().find(x=>x.id===tId):getTalents()[0];
   const c=document.getElementById('talent-tab-'+tab);if(!c)return;
-  if(tab==='overview')renderTalentOverview(c,t);else if(tab==='orders')renderTalentOrders(c,t);else if(tab==='profile')renderTalentProfile(c,t);else if(tab==='earnings')renderTalentEarnings(c,t);
+  if(tab==='overview')renderTalentOverview(c,t);
+  else if(tab==='orders')renderTalentOrders(c,t);
+  else if(tab==='profile')renderTalentProfile(c,t);
+  else if(tab==='earnings')renderTalentEarnings(c,t);
+  // Scroll content to top
+  const content=document.getElementById('talentContent');
+  if(content)content.scrollTop=0;
 }
 
 function renderTalentOverview(el,t){
@@ -674,7 +752,7 @@ function renderTalentOverview(el,t){
       <div class="dash-stat-card" style="border-top:3px solid #48bb78"><div class="dsc-icon">✅</div><div class="dsc-val">${myOrders.filter(o=>o.status==='Aktif').length}</div><div class="dsc-label">Aktif</div></div>
       <div class="dash-stat-card" style="border-top:3px solid #2563eb"><div class="dsc-icon">🏅</div><div class="dsc-val">${myOrders.filter(o=>o.status==='Selesai').length}</div><div class="dsc-label">Selesai</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="admin-2col-grid" style="margin-bottom:1rem">
       <div class="dash-section" style="background:linear-gradient(135deg,var(--pink-light),var(--purple-light))">
         <div style="display:flex;align-items:center;gap:1rem">
           <div style="width:60px;height:60px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center">
@@ -712,7 +790,7 @@ function renderTalentProfile(el,t){
   if(!t){el.innerHTML='<p>Data tidak ditemukan</p>';return;}
   const photoUrl=getTalentPhotoUrl(t.id);const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
   el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Edit Profil ✏️</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="admin-2col-grid">
       <div class="dash-section">
         <div style="text-align:center;padding:1.5rem;background:linear-gradient(135deg,var(--pink-light),var(--purple-light));border-radius:var(--radius);margin-bottom:1.25rem">
           <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;margin:0 auto .75rem;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center">
@@ -798,3 +876,4 @@ function showPopup(icon,title,body){
   if(pi)pi.textContent=icon+' ';if(pt)pt.textContent=title;if(pb)pb.textContent=body;
   p.classList.add('show');setTimeout(()=>p.classList.remove('show'),5500);
 }
+
