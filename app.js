@@ -2,132 +2,30 @@
 
 // ══════════════════════════════════════════════════════
 //  FOTO TALENT — Google Drive Thumbnail System
-//  Folder: https://drive.google.com/drive/folders/14BehenqbNI49ePtJcRI6Gm3HUuZqeugj
-//
-//  CARA ISI FILE_ID:
-//  1. Buka Google Drive folder di atas
-//  2. Klik kanan foto → "Bagikan" → pastikan "Siapa saja yang memiliki link"
-//  3. Salin link, ambil bagian: drive.google.com/file/d/FILE_ID/view
-//  4. Tempel FILE_ID di bawah, ganti placeholder 'ISI_FILE_ID_DI_SINI'
 // ══════════════════════════════════════════════════════
 
 const G = id => id ? `https://drive.google.com/thumbnail?id=${id}&sz=w600` : null;
 
-// ── MAPPING FOTO PER TALENT ──
-// Isi FILE_ID dari Google Drive untuk setiap talent
-// Satu talent bisa punya banyak foto (main + gallery)
 const PHOTO_IDS = {
-  // ─────────────── TALENT CEWE ───────────────
-  't001': { // Ara Salsabila
-    main: null,                        // ← isi FILE_ID foto utama
-    gallery: [null, null, null]        // ← isi FILE_ID foto galeri (max 3)
-  },
-  't002': { // Nara Putri
-    main: null,
-    gallery: [null, null, null]
-  },
-  't003': { // Dira Cantika
-    main: null,
-    gallery: [null, null, null]
-  },
-  't004': { // Luna Safira
-    main: null,
-    gallery: [null, null, null]
-  },
-  't005': { // Reva Anindita
-    main: null,
-    gallery: [null, null, null]
-  },
-  't006': { // Zara Najwa
-    main: null,
-    gallery: [null, null, null]
-  },
-  't007': { // Sari Melati
-    main: null,
-    gallery: [null, null, null]
-  },
-  't008': { // Kaia Rizky
-    main: null,
-    gallery: [null, null, null]
-  },
-  // ─────────────── TALENT COWO ───────────────
-  't009': { // Kira Mahesa
-    main: null,
-    gallery: [null, null, null]
-  },
-  't010': { // Dani Pratama
-    main: null,
-    gallery: [null, null, null]
-  },
-  't011': { // Rio Ardiansyah
-    main: null,
-    gallery: [null, null, null]
-  },
+  't001': { main: null, gallery: [null, null, null] },
+  't002': { main: null, gallery: [null, null, null] },
+  't003': { main: null, gallery: [null, null, null] },
+  't004': { main: null, gallery: [null, null, null] },
+  't005': { main: null, gallery: [null, null, null] },
+  't006': { main: null, gallery: [null, null, null] },
+  't007': { main: null, gallery: [null, null, null] },
+  't008': { main: null, gallery: [null, null, null] },
+  't009': { main: null, gallery: [null, null, null] },
+  't010': { main: null, gallery: [null, null, null] },
+  't011': { main: null, gallery: [null, null, null] },
 };
 
-// Konversi PHOTO_IDS ke URL lengkap
 const TALENT_PHOTOS = Object.fromEntries(
   Object.entries(PHOTO_IDS).map(([id, p]) => [id, {
     main:    G(p.main),
     gallery: (p.gallery||[]).map(G)
   }])
 );
-
-// ══════════════════════════════════════════════════════
-//  CUSTOM PHOTO STORAGE (upload / Google Drive link)
-//  Disimpan di localStorage per-talent, override PHOTO_IDS
-//  Format: { main: 'data:...' | 'url', gallery: ['url'|null, ...] }
-// ══════════════════════════════════════════════════════
-const getCustomPhotos = () => lsGet('lovia_custom_photos', {});
-const setCustomPhotos = d => lsSet('lovia_custom_photos', d);
-
-// Ambil semua foto custom untuk satu talent
-function getCustomPhotoData(talentId) {
-  const all = getCustomPhotos();
-  return all[talentId] || { main: null, gallery: [null, null] };
-}
-
-// Simpan foto custom untuk satu talent
-function saveCustomPhotoData(talentId, data) {
-  const all = getCustomPhotos();
-  all[talentId] = data;
-  setCustomPhotos(all);
-}
-
-// Ekstrak File ID dari berbagai format Google Drive URL
-function extractDriveId(input) {
-  if (!input) return null;
-  input = input.trim();
-  // Format: /file/d/ID/view atau /d/ID
-  let m = input.match(/\/(?:file\/d|d)\/([a-zA-Z0-9_-]{20,})/);
-  if (m) return m[1];
-  // Format: id=ID
-  m = input.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
-  if (m) return m[1];
-  // Kalau sudah berupa ID langsung (20+ chars, no slashes)
-  if (/^[a-zA-Z0-9_-]{20,}$/.test(input)) return input;
-  return null;
-}
-
-// Konversi Drive link / ID ke thumbnail URL
-function driveUrlFromInput(input) {
-  if (!input) return null;
-  const id = extractDriveId(input);
-  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
-  // Jika sudah URL lengkap (non-drive), kembalikan langsung
-  if (input.startsWith('http')) return input;
-  return null;
-}
-
-// ── RUNTIME: coba load foto dari Drive, update image jika berhasil ──
-function tryLoadPhoto(imgEl, fallbackEl, url) {
-  if (!url || !imgEl) { if(fallbackEl) fallbackEl.style.display='flex'; return; }
-  imgEl.onload  = () => { imgEl.style.display='block'; if(fallbackEl) fallbackEl.style.display='none'; };
-  imgEl.onerror = () => { imgEl.style.display='none'; if(fallbackEl) fallbackEl.style.display='flex'; };
-  imgEl.src = url;
-}
-
-
 
 const TALENT_GRADIENTS = {
   't001': ['#fce4ed','#e8a4c0'], 't002': ['#ede4fc','#b0a0e8'],
@@ -138,144 +36,306 @@ const TALENT_GRADIENTS = {
   't011': ['#f8e4e4','#e09090'],
 };
 
+// ══════════════════════════════════════════════════════
+//  FIREBASE HELPERS — Real-time Database
+// ══════════════════════════════════════════════════════
+
+// Cache lokal agar UI tetap responsif
+let _talentsCache  = null;
+let _ordersCache   = null;
+let _priceCache    = null;
+let _testiCache    = null;
+let _photosCache   = {};
+
+// Listener aktif untuk auto-refresh UI
+function initFirebaseListeners() {
+  // ── TALENTS ──
+  db.ref('talents').on('value', snap => {
+    const val = snap.val();
+    if (val) {
+      _talentsCache = Object.values(val);
+    } else {
+      // Jika database kosong, seed dari DEFAULT
+      _talentsCache = DEFAULT_TALENTS;
+      DEFAULT_TALENTS.forEach(t => db.ref('talents/' + t.id).set(t));
+    }
+    // Refresh UI jika ada halaman yang terbuka
+    const talentGrid = document.getElementById('talentGrid');
+    if (talentGrid && talentGrid.children.length > 0) renderTalents();
+    const showcase = document.getElementById('talentShowcase');
+    if (showcase && showcase.children.length > 0) renderShowcase();
+  });
+
+  // ── ORDERS ──
+  db.ref('orders').on('value', snap => {
+    const val = snap.val();
+    _ordersCache = val ? Object.values(val).sort((a,b) => (b.createdAt||0)-(a.createdAt||0)) : DEFAULT_ORDERS;
+    if (!val) {
+      DEFAULT_ORDERS.forEach(o => db.ref('orders/' + o.id).set(o));
+    }
+  });
+
+  // ── PRICELIST ──
+  db.ref('pricelist').on('value', snap => {
+    const val = snap.val();
+    if (val) {
+      _priceCache = val;
+    } else {
+      _priceCache = DEFAULT_PRICELIST;
+      db.ref('pricelist').set(DEFAULT_PRICELIST);
+    }
+  });
+
+  // ── TESTIMONIALS ──
+  db.ref('testimonials').on('value', snap => {
+    const val = snap.val();
+    if (val) {
+      _testiCache = Object.values(val);
+    } else {
+      _testiCache = DEFAULT_TESTIMONIALS;
+      DEFAULT_TESTIMONIALS.forEach((t,i) => db.ref('testimonials/t'+i).set(t));
+    }
+    const tGrid = document.getElementById('testimonialsGrid');
+    if (tGrid && tGrid.children.length > 0) renderTestimonials();
+  });
+
+  // ── CUSTOM PHOTOS ──
+  db.ref('customPhotos').on('value', snap => {
+    _photosCache = snap.val() || {};
+  });
+}
+
+// ── GETTER/SETTER FIREBASE ──
+
+function getTalents() {
+  return _talentsCache || DEFAULT_TALENTS;
+}
+
+function setTalents(arr) {
+  _talentsCache = arr;
+  // Simpan ke Firebase sebagai map id -> data
+  const map = {};
+  arr.forEach(t => { map[t.id] = t; });
+  db.ref('talents').set(map).catch(e => console.error('setTalents error:', e));
+}
+
+function updateTalent(id, updates) {
+  _talentsCache = (_talentsCache || DEFAULT_TALENTS).map(t => t.id===id ? {...t,...updates} : t);
+  db.ref('talents/' + id).update(updates).catch(e => console.error('updateTalent error:', e));
+}
+
+function getOrders() {
+  return _ordersCache || DEFAULT_ORDERS;
+}
+
+function setOrders(arr) {
+  _ordersCache = arr;
+  const map = {};
+  arr.forEach(o => { map[o.id] = o; });
+  db.ref('orders').set(map).catch(e => console.error('setOrders error:', e));
+}
+
+function addOrder(order) {
+  _ordersCache = [order, ...(_ordersCache || [])];
+  db.ref('orders/' + order.id).set(order).catch(e => console.error('addOrder error:', e));
+}
+
+function updateOrderStatus(id, status) {
+  _ordersCache = (_ordersCache || []).map(o => o.id===id ? {...o, status} : o);
+  db.ref('orders/' + id + '/status').set(status)
+    .then(() => toast('Status diperbarui ✓', 'success'))
+    .catch(e => { console.error(e); toast('Gagal update status', 'error'); });
+}
+
+function getTestimonials() {
+  return _testiCache || DEFAULT_TESTIMONIALS;
+}
+
+function setTestimonials(arr) {
+  _testiCache = arr;
+  const map = {};
+  arr.forEach((t,i) => { map['t'+i] = t; });
+  db.ref('testimonials').set(map).catch(e => console.error('setTestimonials error:', e));
+}
+
+function getPricelist() {
+  return _priceCache || DEFAULT_PRICELIST;
+}
+
+function setPricelist(pl) {
+  _priceCache = pl;
+  db.ref('pricelist').set(pl).catch(e => console.error('setPricelist error:', e));
+}
+
+// ── CUSTOM PHOTOS via Firebase DB (bukan localStorage lagi) ──
+function getCustomPhotos() {
+  return _photosCache || {};
+}
+
+function getCustomPhotoData(talentId) {
+  return (_photosCache || {})[talentId] || { main: null, gallery: [null, null] };
+}
+
+function saveCustomPhotoData(talentId, data) {
+  if (!_photosCache) _photosCache = {};
+  _photosCache[talentId] = data;
+  db.ref('customPhotos/' + talentId).set(data).catch(e => console.error('saveCustomPhotoData error:', e));
+}
+
+// ── PHOTO UPLOAD ke Firebase Storage ──
+async function uploadPhotoToStorage(file, talentId, slotType, slotIdx) {
+  const ext = file.name.split('.').pop();
+  const path = `talent-photos/${talentId}/${slotType}${slotIdx >= 0 ? '_'+slotIdx : ''}.${ext}`;
+  const ref = storage.ref(path);
+  toast('Mengupload foto...', 'info');
+  try {
+    const snap = await ref.put(file);
+    const url = await snap.ref.getDownloadURL();
+    return url;
+  } catch(e) {
+    console.error('Upload error:', e);
+    toast('Gagal upload ke server, simpan lokal saja', 'error');
+    // Fallback ke base64 local
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  GOOGLE DRIVE HELPERS
+// ══════════════════════════════════════════════════════
+function extractDriveId(input) {
+  if (!input) return null;
+  input = input.trim();
+  let m = input.match(/\/(?:file\/d|d)\/([a-zA-Z0-9_-]{20,})/);
+  if (m) return m[1];
+  m = input.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
+  if (m) return m[1];
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(input)) return input;
+  return null;
+}
+
+function driveUrlFromInput(input) {
+  if (!input) return null;
+  const id = extractDriveId(input);
+  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+  if (input.startsWith('http')) return input;
+  return null;
+}
+
 function getTalentPhotoUrl(id) {
-  // Cek custom photo dulu (diupload oleh talent)
   const custom = getCustomPhotoData(id);
   if (custom.main) return custom.main;
-  // Fallback ke PHOTO_IDS (Google Drive static)
   const p = TALENT_PHOTOS[id];
   return (p && p.main) ? p.main : null;
 }
+
 function getTalentGallery(id) {
-  // Custom gallery (2 slot), merge dengan static gallery
   const custom = getCustomPhotoData(id);
   const customGallery = custom.gallery || [null, null];
   const staticP = TALENT_PHOTOS[id];
   const staticGallery = (staticP && staticP.gallery) ? staticP.gallery : [null, null];
-  // Gabungkan: custom gallery [0,1] + static [0] jika ada
   return [
     customGallery[0] || staticGallery[0] || null,
     customGallery[1] || staticGallery[1] || null,
   ];
 }
-// Render img tag dengan fallback otomatis ke emoji
+
 function photoImgTag(url, name, extraStyle) {
   if (!url) return '';
   return `<img src="${url}" alt="${name||''}" style="width:100%;height:100%;object-fit:cover;display:block;${extraStyle||''}" loading="lazy" onerror="this.style.display='none';var n=this.nextElementSibling;if(n&&n.classList&&n.classList.contains('talent-avatar-fallback'))n.style.display='flex';">`;
 }
 
 // ── STATE ──
-let currentUser=null, currentPage='landing', musicPlaying=false,
-    bookingStep=1, bookingData={}, currentPriceFilter='all';
+let currentUser = null, currentPage = 'landing', musicPlaying = false,
+    bookingStep = 1, bookingData = {}, currentPriceFilter = 'all';
 
-const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}};
-const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
-const getTalents=()=>lsGet('lovia_talents',DEFAULT_TALENTS);
-const setTalents=d=>lsSet('lovia_talents',d);
-const getOrders=()=>lsGet('lovia_orders',DEFAULT_ORDERS);
-const setOrders=d=>lsSet('lovia_orders',d);
-const getTestimonials=()=>lsGet('lovia_testimonials',DEFAULT_TESTIMONIALS);
-const setTestimonials=d=>lsSet('lovia_testimonials',d);
-const getPricelist=()=>lsGet('lovia_pricelist',DEFAULT_PRICELIST);
-const setPricelist=d=>lsSet('lovia_pricelist',d);
+// ── Legacy localStorage helpers (untuk session saja) ──
+const lsGet = (k,d) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):d; } catch { return d; } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} };
 
-const DEFAULT_TALENTS=[
-  // ══════════════════════════════════════
-  // TALENT CEWE (Perempuan) — Folder Drive
-  // ══════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  DEFAULT DATA
+// ══════════════════════════════════════════════════════
+const DEFAULT_TALENTS = [
   {id:'t001',name:'Ara Salsabila',nickname:'Ara',age:22,gender:'Perempuan',location:'Jakarta',
    bio:'Hii, aku Ara! Suka ngobrol, nonton film, dan kulineran. Orangnya humoris dan easygoing. Dijamin gak bakal bosen ngobrol sama aku 💕',
    hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],
    rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',
-   ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,
-   username:'ara01',password:'ara123'},
+   ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,username:'ara01',password:'ara123'},
 
   {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',
    bio:'Music lover & gaming enthusiast! Yuk mabar bareng atau sekadar dengerin curhat. Aku teman ngobrol yang gak pernah boring 🎵',
    hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',
-   ig:'@naraputri_',tiktok:'@nara.music',verified:true,
-   username:'nara01',password:'nara123'},
+   ig:'@naraputri_',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
 
   {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',
    bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu! Suka cafe hopping & travel. Offline date ke mana aja, aku siap! 🌺',
    hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],
    rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',
-   ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,
-   username:'dira01',password:'dira123'},
+   ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,username:'dira01',password:'dira123'},
 
   {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',
    bio:'Introvert tapi asik banget diajak ngobrol. Suka sastra, kopi hangat, dan hujan. Deep conversation adalah hal favoritku 🌙',
    hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],
    schedule:['Sore (17-20)','Malam (20-24)'],
    rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',
-   ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,
-   username:'luna01',password:'luna123'},
+   ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,username:'luna01',password:'luna123'},
 
   {id:'t005',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',
    bio:'Aktris teater yang punya segudang cerita seru! Yuk ngobrol dan temukan warna baru dalam hidupmu 🎭',
    hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)'],
    rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',
-   ig:'@reva.anindita',tiktok:'@reva_art',verified:true,
-   username:'reva01',password:'reva123'},
+   ig:'@reva.anindita',tiktok:'@reva_art',verified:true,username:'reva01',password:'reva123'},
 
   {id:'t006',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',
    bio:'Foodie sejati! Selalu tau tempat makan enak yang lagi hits. Asik banget buat teman jalan & konten bareng 🍜',
    hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],
    schedule:['Siang (12-17)','Malam (20-24)'],
    rating:4.6,bookings:97,price:'26K',status:'online',avatar:'🍜',
-   ig:'@zara.najwa',tiktok:'@zara_food',verified:true,
-   username:'zara01',password:'zara123'},
+   ig:'@zara.najwa',tiktok:'@zara_food',verified:true,username:'zara01',password:'zara123'},
 
   {id:'t007',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',
    bio:'Pecinta kopi & buku. Deep conversation adalah hal yang paling aku suka. Ayo ngobrol sambil nongkrong! ☕',
    hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],
    schedule:['Pagi (06-12)','Sore (17-20)'],
    rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',
-   ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,
-   username:'sari01',password:'sari123'},
+   ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,username:'sari01',password:'sari123'},
 
   {id:'t008',name:'Kaia Rizky',nickname:'Kaia',age:20,gender:'Perempuan',location:'Jakarta',
    bio:'Dancer & content creator! Energi positif 24/7. Seru banget buat teman ngobrol soal apapun — fashion, lifestyle, atau sekadar ketawa bareng 🦋',
    hobbies:'Dance, Content Creation, Fashion',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Malam (20-24)'],
    rating:4.7,bookings:163,price:'26K',status:'online',avatar:'🦋',
-   ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,
-   username:'kaia01',password:'kaia123'},
+   ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,username:'kaia01',password:'kaia123'},
 
-  // ══════════════════════════════════════
-  // TALENT COWO (Laki-laki)
-  // ══════════════════════════════════════
   {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',
    bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',
    hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',
-   ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,
-   username:'kira01',password:'kira123'},
+   ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
 
   {id:'t010',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',
    bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',
    hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],
    rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',
-   ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,
-   username:'dani01',password:'dani123'},
+   ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,username:'dani01',password:'dani123'},
 
   {id:'t011',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',
    bio:'Fotografer & traveler dengan seribu cerita! Yuk cerita soal perjalanan atau foto bareng jalan-jalan 📸',
    hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)'],
    rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',
-   ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,
-   username:'rio01',password:'rio123'},
+   ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,username:'rio01',password:'rio123'},
 ];
 
-const DEFAULT_TESTIMONIALS=[
+const DEFAULT_TESTIMONIALS = [
   {name:'Amel R.',avatar:'👧',rating:5,text:'Pengalaman pertama sewa talent di Lovia Partner dan langsung ketagihan! Ara super asik, responsif banget. Highly recommended!',service:'Chatting 7 Hari'},
   {name:'Budi S.',avatar:'👦',rating:5,text:'Mabar sama Kira tuh seru banget, dia pro abis! Rank langsung naik. Dijamin ga nyesel booking di sini.',service:'Mabar Session'},
   {name:'Citra M.',avatar:'👩',rating:5,text:'Offline date sama Dira sangat menyenangkan! Dia asik, friendly, dan tahu banyak spot kece. Rekomen banget!',service:'Offline Date 4 Jam'},
@@ -284,7 +344,7 @@ const DEFAULT_TESTIMONIALS=[
   {name:'Fajar K.',avatar:'👦',rating:5,text:'Reva teman ngobrol yang luar biasa! Ceritanya seru, wawasannya luas. Satu jam kayak lima menit aja.',service:'Calling 60 Menit'},
 ];
 
-const DEFAULT_PRICELIST={
+const DEFAULT_PRICELIST = {
   chatting:[{label:'1 Hari',price:'26.000',popular:false},{label:'3 Hari',price:'50.000',popular:false},{label:'7 Hari',price:'93.000',popular:true},{label:'14 Hari',price:'185.000',popular:false},{label:'30 Hari',price:'370.000',popular:false}],
   calling:[{label:'15 Menit',price:'12.000',popular:false},{label:'30 Menit',price:'23.000',popular:true},{label:'60 Menit',price:'45.000',popular:false},{label:'90 Menit',price:'60.000',popular:false},{label:'120 Menit',price:'100.000',popular:false}],
   videocall:[{label:'15 Menit',price:'30.000',popular:false},{label:'30 Menit',price:'55.000',popular:false},{label:'60 Menit',price:'95.000',popular:true},{label:'90 Menit',price:'125.000',popular:false},{label:'120 Menit',price:'160.000',popular:false}],
@@ -304,339 +364,360 @@ const DEFAULT_PRICELIST={
   ],
 };
 
-const DEFAULT_ORDERS=[
-  {id:'ORD001',customer:'Amel R.',wa:'0812-0000-0001',talent:'Ara Salsabila',service:'Chatting 7 Hari',date:'2026-05-01',status:'Selesai',total:'93.000'},
-  {id:'ORD002',customer:'Budi S.',wa:'0812-0000-0002',talent:'Kira Mahesa',service:'Mabar 1x',date:'2026-05-03',status:'Aktif',total:'10.000'},
-  {id:'ORD003',customer:'Citra M.',wa:'0812-0000-0003',talent:'Dira Cantika',service:'Offline Date 4 Jam',date:'2026-05-10',status:'Menunggu',total:'270.000'},
-  {id:'ORD004',customer:'Dodi F.',wa:'0812-0000-0004',talent:'Reva Anindita',service:'Video Call 30 Mnt',date:'2026-05-08',status:'Selesai',total:'55.000'},
-  {id:'ORD005',customer:'Erlin P.',wa:'0812-0000-0005',talent:'Luna Safira',service:'PDKT 2',date:'2026-05-12',status:'Aktif',total:'165.000'},
+const DEFAULT_ORDERS = [
+  {id:'ORD001',customer:'Amel R.',wa:'0812-0000-0001',talent:'Ara Salsabila',service:'Chatting 7 Hari',date:'2026-05-01',status:'Selesai',total:'93.000',createdAt:1746057600000},
+  {id:'ORD002',customer:'Budi S.',wa:'0812-0000-0002',talent:'Kira Mahesa',service:'Mabar 1x',date:'2026-05-03',status:'Aktif',total:'10.000',createdAt:1746230400000},
+  {id:'ORD003',customer:'Citra M.',wa:'0812-0000-0003',talent:'Dira Cantika',service:'Offline Date 4 Jam',date:'2026-05-10',status:'Menunggu',total:'270.000',createdAt:1746835200000},
+  {id:'ORD004',customer:'Dodi F.',wa:'0812-0000-0004',talent:'Reva Anindita',service:'Video Call 30 Mnt',date:'2026-05-08',status:'Selesai',total:'55.000',createdAt:1746662400000},
+  {id:'ORD005',customer:'Erlin P.',wa:'0812-0000-0005',talent:'Luna Safira',service:'PDKT 2',date:'2026-05-12',status:'Aktif',total:'165.000',createdAt:1747008000000},
 ];
 
-// ── INIT ── (FIX: semua di dalam DOMContentLoaded)
-document.addEventListener('DOMContentLoaded',()=>{
-  initLoading(); initCursor(); initNavbar(); initTheme();
-  // FIX KRITIS: themeToggle listener dipindah ke sini
-  const tt=document.getElementById('themeToggle');
-  if(tt) tt.addEventListener('click',()=>{
-    const c=document.documentElement.getAttribute('data-theme'),n=c==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',n);
-    localStorage.setItem('lovia_theme',n); updateThemeIcon(n);
-    toast('Mode '+(n==='dark'?'Gelap 🌙':'Terang ☀️')+' aktif','info');
+// ══════════════════════════════════════════════════════
+//  INIT — DOM READY
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Init Firebase listeners PERTAMA — sebelum render apa pun
+  initFirebaseListeners();
+
+  initLoading();
+  initCursor();
+  initNavbar();
+  initTheme();
+
+  // Theme toggle
+  const tt = document.getElementById('themeToggle');
+  if (tt) tt.addEventListener('click', () => {
+    const c = document.documentElement.getAttribute('data-theme');
+    const n = c === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', n);
+    localStorage.setItem('lovia_theme', n);
+    updateThemeIcon(n);
+    toast('Mode ' + (n==='dark'?'Gelap 🌙':'Terang ☀️') + ' aktif', 'info');
   });
-  renderHome(); initCounters(); initScrollReveal(); initTyping(); schedulePopup();
-  const sess=lsGet('lovia_session',null);
-  if(sess){currentUser=sess;if(sess.role==='admin')showPage('admin');else if(sess.role==='talent')showPage('talent-dash');}
+
+  renderHome();
+  initCounters();
+  initScrollReveal();
+  initTyping();
+  schedulePopup();
+
+  // ESC menutup drawer
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeDashSidebar('admin');
+      closeDashSidebar('talent');
+    }
+  });
+
+  // Cek session tersimpan
+  const sess = lsGet('lovia_session', null);
+  if (sess) {
+    currentUser = sess;
+    if (sess.role === 'admin') showPage('admin');
+    else if (sess.role === 'talent') showPage('talent-dash');
+  }
 });
 
-function initLoading(){setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls)ls.classList.add('hidden');},1900);}
-
-function initCursor(){
-  if(window.innerWidth<=768)return;
-  const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
-  if(!dot||!ring)return;
-  document.addEventListener('mousemove',e=>{dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';setTimeout(()=>{ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';},80);});
-  document.addEventListener('mouseover',e=>{if(e.target.matches('button,a,.talent-card,.service-card,.price-item-card,.package-card')){ring.style.width='50px';ring.style.height='50px';ring.style.borderColor='var(--pink-deep)';}});
-  document.addEventListener('mouseout',e=>{if(e.target.matches('button,a,.talent-card,.service-card,.price-item-card,.package-card')){ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='var(--pink)';}});
+function initLoading() {
+  setTimeout(() => { const ls = document.getElementById('loadingScreen'); if (ls) ls.classList.add('hidden'); }, 1900);
 }
 
-function initNavbar(){window.addEventListener('scroll',()=>{const nb=document.getElementById('navbar');if(nb)nb.classList.toggle('scrolled',window.scrollY>20);});}
-function toggleMobileMenu(){const nl=document.getElementById('navLinks');if(nl)nl.classList.toggle('open');}
-function initTheme(){const s=localStorage.getItem('lovia_theme')||'light';document.documentElement.setAttribute('data-theme',s);updateThemeIcon(s);}
-function updateThemeIcon(t){const i=document.getElementById('themeIcon');if(i)i.className=t==='dark'?'fas fa-sun':'fas fa-moon';}
-
-function initScrollReveal(){
-  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
-  document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el=>obs.observe(el));
+function initCursor() {
+  if (window.innerWidth <= 768) return;
+  const dot = document.getElementById('cursorDot'), ring = document.getElementById('cursorRing');
+  if (!dot || !ring) return;
+  document.addEventListener('mousemove', e => { dot.style.left=e.clientX+'px'; dot.style.top=e.clientY+'px'; setTimeout(()=>{ ring.style.left=e.clientX+'px'; ring.style.top=e.clientY+'px'; },80); });
+  document.addEventListener('mouseover', e => { if (e.target.matches('button,a,.talent-card,.service-card,.price-item-card,.package-card')) { ring.style.width='50px'; ring.style.height='50px'; ring.style.borderColor='var(--pink-deep)'; }});
+  document.addEventListener('mouseout',  e => { if (e.target.matches('button,a,.talent-card,.service-card,.price-item-card,.package-card')) { ring.style.width='32px'; ring.style.height='32px'; ring.style.borderColor='var(--pink)'; }});
 }
 
-function initTyping(){
-  const phrases=['Terbaik Untukmu ✨','untuk Menemanimu 💫','untuk Ngobrol Seru 💬','untuk Offline Date 📍','untuk Mabar Bareng 🎮'];
-  let pi=0,ci=0,del=false;
-  const el=document.querySelector('.hero-title em');
-  if(!el)return;
-  function type(){
-    const p=phrases[pi];
-    el.textContent=del?p.slice(0,ci-1):p.slice(0,ci+1);
-    del?ci--:ci++;
-    if(!del&&ci===p.length){setTimeout(()=>{del=true;type();},2200);return;}
-    if(del&&ci===0){del=false;pi=(pi+1)%phrases.length;}
-    setTimeout(type,del?55:85);
-  }
-  setTimeout(type,2000);
-}
-
-function initCounters(){
-  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;e.target.querySelectorAll('.stat-num').forEach(n=>{const target=+n.dataset.target;let cur=0;const iv=setInterval(()=>{cur=Math.min(cur+target/60,target);n.textContent=Math.floor(cur).toLocaleString('id');if(cur>=target)clearInterval(iv);},20);});obs.unobserve(e.target);});},{threshold:.3});
-  const s=document.querySelector('.hero-stats');if(s)obs.observe(s);
-}
-
-// ── PAGE ROUTING ──
-function showPage(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const el=document.getElementById('page-'+page);if(!el)return;
-  el.classList.add('active');currentPage=page;
-  const dash=page==='admin'||page==='talent-dash';
-  const footer=document.getElementById('mainFooter');
-  const navbar=document.getElementById('navbar');
-  const floatWa=document.querySelector('.float-wa');
-  const floatMusic=document.getElementById('floatMusic');
-  if(footer)footer.style.display=dash?'none':'block';
-  if(navbar)navbar.style.display=dash?'none':'';
-  if(floatWa)floatWa.style.display=dash?'none':'';
-  if(floatMusic)floatMusic.style.display=dash?'none':'';
-  // Close any open drawer when navigating
-  closeDashSidebar('admin');
-  closeDashSidebar('talent');
-  document.body.style.overflow='';
-  if(!dash) window.scrollTo({top:0,behavior:'smooth'});
-  const nl=document.getElementById('navLinks');if(nl)nl.classList.remove('open');
-  if(page==='talents')renderSkeletonTalents();
-  else if(page==='pricelist')renderPricelist();
-  else if(page==='admin'){
-    if(!currentUser||currentUser.role!=='admin'){toast('Login sebagai admin dulu!','error');showLoginModal();return;}
-    renderAdminDash();
-  }
-  else if(page==='talent-dash'){
-    if(!currentUser||currentUser.role!=='talent'){toast('Login sebagai talent dulu!','error');showLoginModal();return;}
-    renderTalentDash();
-  }
-  setTimeout(initScrollReveal,100);
-}
-
-// ── HOME ──
-function renderHome(){renderHomeTalents();renderTestimonials();}
-
-function renderHomeTalents(){
-  const grid=document.getElementById('homeTalentGrid');
-  if(grid)grid.innerHTML=getTalents().slice(0,4).map(talentCard).join('');
-}
-
-function renderTestimonials(){
-  const grid=document.getElementById('testimonialGrid');
-  if(!grid)return;
-  grid.innerHTML=getTestimonials().map(t=>`
-    <div class="testi-card reveal">
-      <div class="testi-header">
-        <div class="testi-avatar">${t.avatar}</div>
-        <div><div class="testi-name">${t.name}</div><div class="testi-stars">${'⭐'.repeat(t.rating)}</div></div>
-      </div>
-      <p class="testi-text">"${t.text}"</p>
-      <span class="testi-service">${t.service}</span>
-    </div>`).join('');
-}
-
-// ── TALENT CARD (dengan foto nyata jika ada) ──
-function talentCard(t){
-  const sc={online:'status-online',offline:'status-offline',busy:'status-busy'};
-  const si={online:'🟢 Online',offline:'⚫ Offline',busy:'🟠 Sibuk'};
-  const tc={'Chatting':'tag-chat','Calling':'tag-call','Video Call':'tag-vc','Offline Date':'tag-offline','Mabar':'tag-mabar'};
-  const photoUrl=getTalentPhotoUrl(t.id);
-  const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-  const fallbackStyle=`background:linear-gradient(135deg,${grad[0]},${grad[1]});display:${photoUrl?'none':'flex'}`;
-
-  return `<div class="talent-card neon-hover" onclick="showTalentDetail('${t.id}')">
-    <div class="talent-img">
-      ${photoUrl?`<img src="${photoUrl}" alt="${t.name}" class="talent-real-photo" loading="lazy"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`:''}
-      <div class="talent-avatar-fallback" style="${fallbackStyle}"><span>${t.avatar}</span></div>
-      <div class="talent-img-overlay"></div>
-      <div class="talent-status ${sc[t.status]||'status-offline'}">${si[t.status]||t.status}</div>
-      ${t.verified?'<div class="talent-verified-badge">✓ Verified</div>':''}
-    </div>
-    <div class="talent-body">
-      <div class="talent-name">${t.name}</div>
-      <div class="talent-meta"><span><i class="fas fa-map-marker-alt"></i> ${t.location}</span><span><i class="fas fa-birthday-cake"></i> ${t.age} thn</span><span>${t.gender==='Perempuan'?'👧':'👦'}</span></div>
-      <p class="talent-bio">${t.bio}</p>
-      <div class="talent-tags">${(t.services||[]).slice(0,3).map(s=>`<span class="talent-tag ${tc[s]||''}">${s}</span>`).join('')}</div>
-      <div class="talent-footer"><div class="talent-price">Mulai <strong>${t.price}</strong>/hari</div><div class="talent-rating"><i class="fas fa-star"></i> ${t.rating} <span style="color:var(--text-muted)">(${t.bookings}x)</span></div></div>
-    </div>
-  </div>`;
-}
-
-// ── TALENT LIST ──
-function renderSkeletonTalents(){
-  const grid=document.getElementById('talentGrid');
-  if(grid)grid.innerHTML=Array(8).fill(0).map(()=>`<div class="skeleton-card"><div class="skeleton skel-img"></div><div style="padding:1rem"><div class="skeleton skel-line"></div><div class="skeleton skel-line-sm"></div><div class="skeleton skel-line" style="width:75%"></div></div></div>`).join('');
-  setTimeout(renderTalents,650);
-}
-
-// FIX: Filter gender, service, status, sort semua bekerja
-function renderTalents(){
-  const q=(document.getElementById('searchTalent')||{}).value||'';
-  const gender=(document.getElementById('filterGender')||{}).value||'';
-  const service=(document.getElementById('filterService')||{}).value||'';
-  const status=(document.getElementById('filterStatus')||{}).value||'';
-  const location=(document.getElementById('filterLocation')||{}).value||'';
-  const sort=(document.getElementById('sortTalent')||{}).value||'';
-  let list=getTalents().filter(t=>{
-    const mQ=!q||t.name.toLowerCase().includes(q.toLowerCase())||t.location.toLowerCase().includes(q.toLowerCase())||t.bio.toLowerCase().includes(q.toLowerCase());
-    const mG=!gender||t.gender===gender;
-    const mS=!service||(t.services||[]).includes(service);
-    const mSt=!status||t.status===status;
-    const mL=!location||t.location===location;
-    return mQ&&mG&&mS&&mSt&&mL;
+function initNavbar() {
+  window.addEventListener('scroll', () => {
+    const nb = document.getElementById('navbar');
+    if (nb) nb.classList.toggle('scrolled', window.scrollY > 20);
   });
-  if(sort==='rating')list=list.sort((a,b)=>b.rating-a.rating);
-  else if(sort==='bookings')list=list.sort((a,b)=>b.bookings-a.bookings);
-  else if(sort==='name')list=list.sort((a,b)=>a.name.localeCompare(b.name));
-  const grid=document.getElementById('talentGrid');if(!grid)return;
-  const count=document.getElementById('talentCount');if(count)count.textContent=list.length;
-  if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)"><div style="font-size:3rem">🔍</div><h3>Talent tidak ditemukan</h3><p>Coba ubah filter</p></div>`;return;}
-  grid.innerHTML=list.map(talentCard).join('');
-  setTimeout(initScrollReveal,100);
+}
+
+function toggleMobileMenu() {
+  const nl = document.getElementById('navLinks');
+  if (nl) nl.classList.toggle('open');
+}
+
+function initTheme() {
+  const s = localStorage.getItem('lovia_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', s);
+  updateThemeIcon(s);
+}
+
+function updateThemeIcon(t) {
+  const i = document.getElementById('themeIcon');
+  if (i) i.className = t==='dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function initScrollReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
+  }, {threshold:.1, rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => obs.observe(el));
+}
+
+function initCounters() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target; const target = +el.dataset.target;
+      let cur = 0; const step = Math.ceil(target/60);
+      const timer = setInterval(() => { cur = Math.min(cur+step, target); el.textContent = cur.toLocaleString('id-ID'); if(cur>=target) clearInterval(timer); }, 25);
+      obs.unobserve(el);
+    });
+  }, {threshold:.5});
+  document.querySelectorAll('.hstat-num').forEach(el => obs.observe(el));
+}
+
+function initTyping() {
+  const el = document.querySelector('.hero-title em');
+  if (!el) return;
+  const words = ['Partner','Teman','Sahabat','Teman Curhat'];
+  let wi = 0, ci = 0, deleting = false;
+  function type() {
+    const w = words[wi]; el.textContent = deleting ? w.slice(0,ci--) : w.slice(0,ci++);
+    if (!deleting && ci > w.length) { deleting = true; setTimeout(type, 1200); return; }
+    if (deleting && ci < 0)        { deleting = false; wi = (wi+1)%words.length; setTimeout(type, 300); return; }
+    setTimeout(type, deleting ? 60 : 100);
+  }
+  type();
+}
+
+// ── PAGE NAVIGATION ──
+function showPage(p) {
+  currentPage = p;
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  const pg = document.getElementById('page-'+p);
+  if (pg) pg.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  const footer = document.getElementById('mainFooter');
+  if (footer) footer.style.display = (p==='admin'||p==='talent-dash') ? 'none' : '';
+  if (p==='landing')       renderHome();
+  if (p==='talents')       renderTalents();
+  if (p==='pricelist')     renderPricelist();
+  if (p==='admin')         renderAdminDash();
+  if (p==='talent-dash')   renderTalentDash();
+}
+
+// ── RENDER HOME ──
+function renderHome() {
+  renderShowcase();
+  renderTestimonials();
+}
+
+function renderShowcase() {
+  const el = document.getElementById('talentShowcase'); if (!el) return;
+  const featured = getTalents().filter(t => t.verified && t.status==='online').slice(0,4);
+  el.innerHTML = featured.map(t => {
+    const photoUrl = getTalentPhotoUrl(t.id);
+    const grad = TALENT_GRADIENTS[t.id] || ['#fce4ed','#e8a4c0'];
+    return `<div class="talent-card reveal" onclick="openTalentDetail('${t.id}')">
+      <div class="tc-photo" style="background:linear-gradient(135deg,${grad[0]},${grad[1]})">
+        ${photoUrl ? `<img src="${photoUrl}" alt="${t.name}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="tc-avatar-fallback" style="${photoUrl?'display:none':''}"><span>${t.avatar}</span></div>
+        <div class="tc-status ${t.status==='online'?'online':''}">${t.status==='online'?'🟢 Online':'⚫ Offline'}</div>
+      </div>
+      <div class="tc-info">
+        <div class="tc-header"><strong>${t.name}</strong>${t.verified?'<span class="verified-badge">✓</span>':''}</div>
+        <div class="tc-meta">${t.location} · ${t.age}thn</div>
+        <div class="tc-rating">⭐ ${t.rating} · ${t.bookings} booking</div>
+        <div class="tc-services">${(t.services||[]).slice(0,3).map(s=>`<span>${s}</span>`).join('')}</div>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:.75rem" onclick="event.stopPropagation();openBooking('${t.id}')">Booking Sekarang</button>
+      </div>
+    </div>`;
+  }).join('');
+  setTimeout(initScrollReveal, 60);
+}
+
+function renderTestimonials() {
+  const el = document.getElementById('testimonialsGrid'); if (!el) return;
+  el.innerHTML = getTestimonials().map(t => `
+    <div class="testi-card reveal">
+      <div class="testi-header"><div class="testi-avatar">${t.avatar}</div><div><strong>${t.name}</strong><div class="testi-stars">${'⭐'.repeat(t.rating)}</div></div></div>
+      <p>"${t.text}"</p>
+      <div class="testi-service">${t.service}</div>
+    </div>`).join('');
+  setTimeout(initScrollReveal, 60);
+}
+
+// ── RENDER TALENTS PAGE ──
+function renderTalents() {
+  const grid = document.getElementById('talentGrid'); if (!grid) return;
+  let talents = getTalents();
+  const search  = (document.getElementById('searchTalent')  ||{}).value||'';
+  const gender  = (document.getElementById('filterGender')  ||{}).value||'';
+  const service = (document.getElementById('filterService') ||{}).value||'';
+  const loc     = (document.getElementById('filterLocation')||{}).value||'';
+  const sort    = (document.getElementById('sortTalent')    ||{}).value||'';
+
+  if (search)  talents = talents.filter(t => t.name.toLowerCase().includes(search.toLowerCase())||t.nickname.toLowerCase().includes(search.toLowerCase()));
+  if (gender)  talents = talents.filter(t => t.gender===gender);
+  if (service) talents = talents.filter(t => (t.services||[]).includes(service));
+  if (loc)     talents = talents.filter(t => t.location.includes(loc));
+  if (sort==='rating')   talents = [...talents].sort((a,b)=>b.rating-a.rating);
+  if (sort==='bookings') talents = [...talents].sort((a,b)=>b.bookings-a.bookings);
+  if (sort==='name')     talents = [...talents].sort((a,b)=>a.name.localeCompare(b.name));
+
+  const cnt = document.getElementById('talentCount'); if (cnt) cnt.textContent = talents.length;
+
+  if (!talents.length) { grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)"><div style="font-size:3rem">🔍</div><p>Tidak ada talent yang sesuai</p></div>'; return; }
+
+  grid.innerHTML = talents.map(t => {
+    const photoUrl = getTalentPhotoUrl(t.id);
+    const grad = TALENT_GRADIENTS[t.id] || ['#fce4ed','#e8a4c0'];
+    return `<div class="talent-card" onclick="openTalentDetail('${t.id}')">
+      <div class="tc-photo" style="background:linear-gradient(135deg,${grad[0]},${grad[1]})">
+        ${photoUrl ? `<img src="${photoUrl}" alt="${t.name}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="tc-avatar-fallback" style="${photoUrl?'display:none':''}"><span>${t.avatar}</span></div>
+        <div class="tc-status ${t.status==='online'?'online':t.status==='busy'?'busy':''}">${t.status==='online'?'🟢 Online':t.status==='busy'?'🟡 Sibuk':'⚫ Offline'}</div>
+        ${t.verified?'<div class="tc-verified">✓ Verified</div>':''}
+        ${t.pendingApproval?'<div class="tc-pending">⏳ Review</div>':''}
+      </div>
+      <div class="tc-info">
+        <div class="tc-header"><strong>${t.name}</strong><span style="font-size:.75rem;color:var(--text-muted)">${t.gender}</span></div>
+        <div class="tc-meta"><i class="fas fa-map-marker-alt" style="font-size:.7rem"></i> ${t.location} · ${t.age}thn</div>
+        <div class="tc-rating">⭐ ${t.rating} <span style="color:var(--text-muted);font-size:.78rem">· ${t.bookings} booking</span></div>
+        <p style="font-size:.78rem;color:var(--text-sec);margin:.4rem 0;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${t.bio}</p>
+        <div class="tc-services">${(t.services||[]).slice(0,3).map(s=>`<span>${s}</span>`).join('')}${(t.services||[]).length>3?`<span>+${t.services.length-3}</span>`:''}</div>
+        <div style="display:flex;gap:.5rem;margin-top:.75rem">
+          <button class="btn-primary" style="flex:1;justify-content:center;font-size:.8rem" onclick="event.stopPropagation();openBooking('${t.id}')">Booking</button>
+          <a href="https://wa.me/628988995637?text=Halo+saya+tertarik+dengan+${encodeURIComponent(t.name)}" target="_blank" style="width:36px;height:36px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:1rem;flex-shrink:0;text-decoration:none" onclick="event.stopPropagation()"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── TALENT DETAIL ──
-function showTalentDetail(id){
-  const t=getTalents().find(x=>x.id===id);if(!t)return;
-  const sc={online:'status-online',offline:'status-offline',busy:'status-busy'};
-  const si={online:'🟢 Online',offline:'⚫ Offline',busy:'🟠 Sibuk'};
-  const vi={'Chatting':'💬','Calling':'📞','Video Call':'🎥','Offline Date':'📍','Mabar':'🎮','PAP':'📸'};
-  const revs=[
-    {u:'Amel R.',s:5,tx:'Sangat asik diajak ngobrol, responsif dan ramah!',d:'2 hari lalu',av:'👧'},
-    {u:'Budi K.',s:5,tx:'Sesuai ekspektasi, profesional dan menyenangkan.',d:'5 hari lalu',av:'👦'},
-    {u:'Citra M.',s:4,tx:'Bagus! Teman ngobrol seru dan tidak membosankan.',d:'1 minggu lalu',av:'👩'},
-  ];
-  const galleryPhotos=getTalentGallery(t.id);
-  const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-  const mainPhotoUrl=getTalentPhotoUrl(t.id);
-
-  const renderGalleryItem=(url,index)=>{
-    const emojis=['✨','🌟','💫'];
-    const bgs=[`linear-gradient(135deg,${grad[0]},${grad[1]})`,`linear-gradient(135deg,var(--purple-light),var(--pink-light))`,`linear-gradient(135deg,var(--peach-light),var(--cream))`];
-    const idx=index<0?0:index;
-    const bg=bgs[idx%3];
-    return url
-      ?`<div class="gallery-img"><img src="${url}" alt="Foto ${idx+1}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'"></div>`
-      :`<div class="gallery-img gallery-img-empty" style="background:${bg}"><span style="font-size:2rem">${emojis[idx%3]}</span></div>`;
-  };
-
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const detPage=document.getElementById('page-talent-detail');
-  if(!detPage)return;
-  detPage.classList.add('active');
-  const navbar=document.getElementById('navbar');
-  const footer=document.getElementById('mainFooter');
-  if(navbar)navbar.style.display='';
-  if(footer)footer.style.display='block';
-
-  const content=document.getElementById('talentDetailContent');
-  if(!content)return;
-
-  content.innerHTML=`
-    <div class="talent-detail-layout">
-      <div class="td-sidebar">
-        <div class="td-main-img">
-          ${mainPhotoUrl?`<img src="${mainPhotoUrl}" alt="${t.name}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}
-          <div class="td-avatar-fallback" style="background:linear-gradient(135deg,${grad[0]},${grad[1]});display:${mainPhotoUrl?'none':'flex'}"><span>${t.avatar}</span></div>
+function openTalentDetail(id) {
+  const t = getTalents().find(x => x.id===id); if (!t) return;
+  showPage('talent-detail');
+  const el = document.getElementById('talentDetailContent'); if (!el) return;
+  const photoUrl = getTalentPhotoUrl(id);
+  const gallery  = getTalentGallery(id);
+  const grad = TALENT_GRADIENTS[id] || ['#fce4ed','#e8a4c0'];
+  el.innerHTML = `
+    <div class="talent-detail-grid">
+      <div class="td-photos">
+        <div style="width:100%;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center;margin-bottom:.75rem">
+          ${photoUrl?`<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:''}
+          <span style="font-size:5rem${photoUrl?';display:none':''}">${t.avatar}</span>
         </div>
-        <div class="td-info-card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
-            <div class="td-name">${t.name}</div>
-            <div class="talent-status ${sc[t.status]||'status-offline'}" style="flex-shrink:0">${si[t.status]||t.status}</div>
-          </div>
-          <div class="td-meta-row"><span><i class="fas fa-map-marker-alt"></i> ${t.location}</span><span><i class="fas fa-birthday-cake"></i> ${t.age} thn</span></div>
-          <div class="td-meta-row"><span><i class="fas fa-venus-mars"></i> ${t.gender}</span><span>⭐ ${t.rating} · ${t.bookings}x booking</span></div>
-          <div class="td-badge-row">
-            ${t.verified?'<span class="talent-tag" style="background:rgba(59,130,246,.1);color:#3b82f6">✓ Verified</span>':''}
-            <span class="talent-tag" style="background:var(--pink-light);color:var(--pink-deep)">⚡ Fast Response</span>
-            ${t.rating>=4.9?'<span class="talent-tag" style="background:var(--gold-light);color:#8b6914">🏆 Top Rated</span>':''}
-          </div>
-          <p style="font-size:.85rem;color:var(--text-sec);margin:.75rem 0;line-height:1.7">${t.bio}</p>
-          <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.5rem">❤️ <strong>Hobi:</strong> ${t.hobbies}</div>
-          ${t.ig?`<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.25rem"><i class="fab fa-instagram" style="color:#e1306c"></i> ${t.ig}</div>`:''}
-          ${t.tiktok?`<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem"><i class="fab fa-tiktok"></i> ${t.tiktok}</div>`:''}
-          <div style="font-weight:700;color:var(--pink-deep);font-size:1.2rem;margin:1rem 0 1.1rem">💰 Mulai <span style="font-family:var(--font-display)">${t.price}</span>/hari</div>
-          <button class="btn-primary glow-btn" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="openBooking('${t.id}')"><i class="fas fa-calendar-plus"></i> Booking Sekarang</button>
-          <a href="https://wa.me/628988995637?text=Halo,+saya+ingin+booking+${encodeURIComponent(t.name)}" target="_blank" class="btn-outline" style="width:100%;justify-content:center;display:flex"><i class="fab fa-whatsapp"></i> Tanya via WhatsApp</a>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          ${gallery.filter(Boolean).map(u=>`<div style="aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;background:var(--card)"><img src="${u}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('')}
         </div>
       </div>
-      <div class="td-main">
-        <div class="td-info-card">
-          <div class="td-section-title">📸 Galeri Foto</div>
-          <div class="gallery-grid">
-            ${renderGalleryItem(mainPhotoUrl,-1)}
-            ${galleryPhotos.map((url,i)=>renderGalleryItem(url,i)).join('')}
-          </div>
+      <div class="td-info">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;flex:1">${t.name} <span style="font-size:1.4rem">${t.avatar}</span></h1>
+          ${t.verified?'<span class="status-badge badge-active">✓ Verified</span>':''}
         </div>
-        <div class="td-info-card">
-          <div class="td-section-title">🛎️ Layanan Tersedia</div>
-          <div style="display:flex;flex-wrap:wrap;gap:.6rem">${(t.services||[]).map(s=>`<span class="talent-tag" style="font-size:.82rem;padding:.35rem .85rem">${vi[s]||'✦'} ${s}</span>`).join('')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;font-size:.85rem;color:var(--text-muted)">
+          <span><i class="fas fa-map-marker-alt"></i> ${t.location}</span>
+          <span><i class="fas fa-birthday-cake"></i> ${t.age} tahun</span>
+          <span><i class="fas fa-venus-mars"></i> ${t.gender}</span>
         </div>
-        <div class="td-info-card">
-          <div class="td-section-title">📅 Jadwal Available</div>
-          <div class="schedule-grid">${['Pagi (06-12)','Siang (12-17)','Sore (17-20)','Malam (20-24)'].map(s=>`<div class="sched-chip ${(t.schedule||[]).includes(s)?'sched-available':'sched-busy'}">${s.includes('Pagi')?'🌅':s.includes('Siang')?'☀️':s.includes('Sore')?'🌆':'🌙'} ${s}</div>`).join('')}</div>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
+          <div><span style="font-size:1.5rem;font-weight:700;color:var(--pink-deep)">⭐ ${t.rating}</span></div>
+          <div style="color:var(--text-muted);font-size:.85rem">${t.bookings}+ booking berhasil</div>
+          <div class="tc-status ${t.status}" style="position:relative;transform:none">${t.status==='online'?'🟢 Online':'⚫ Offline'}</div>
         </div>
-        <div class="td-info-card">
-          <div class="td-section-title">💬 Review Customer</div>
-          ${revs.map(r=>`<div class="review-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem"><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.2rem">${r.av}</span><strong style="font-size:.88rem">${r.u}</strong></div><span style="font-size:.72rem;color:var(--text-muted)">${r.d}</span></div><div style="color:#f59e0b;font-size:.8rem;margin-bottom:.3rem">${'⭐'.repeat(r.s)}</div><p style="font-size:.83rem;color:var(--text-sec);font-style:italic">"${r.tx}"</p></div>`).join('')}
+        <p style="color:var(--text-sec);line-height:1.75;margin-bottom:1.25rem">${t.bio}</p>
+        <div style="display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem">
+          <div><strong style="font-size:.82rem;color:var(--text-muted)">HOBI</strong><div style="margin-top:.3rem;font-size:.88rem">${t.hobbies}</div></div>
+          <div><strong style="font-size:.82rem;color:var(--text-muted)">LAYANAN</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.services||[]).map(s=>`<span class="tc-services"><span>${s}</span></span>`).join('')}</div></div>
+          <div><strong style="font-size:.82rem;color:var(--text-muted)">JADWAL AKTIF</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.schedule||[]).map(s=>`<span style="padding:.2rem .6rem;background:var(--purple-light);border-radius:50px;font-size:.78rem">${s}</span>`).join('')}</div></div>
+          ${t.ig?`<div><strong style="font-size:.82rem;color:var(--text-muted)">SOSMED</strong><div style="margin-top:.3rem;font-size:.85rem"><i class="fab fa-instagram"></i> ${t.ig}${t.tiktok?` &nbsp; <i class="fab fa-tiktok"></i> ${t.tiktok}`:''}</div></div>`:''}
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <button class="btn-primary glow-btn" style="flex:1;justify-content:center" onclick="openBooking('${t.id}')"><i class="fas fa-calendar-plus"></i> Booking Sekarang</button>
+          <a href="https://wa.me/628988995637?text=Halo+saya+ingin+booking+${encodeURIComponent(t.name)}" target="_blank" class="btn-outline" style="flex:1;justify-content:center;text-decoration:none;display:flex;align-items:center;gap:.4rem"><i class="fab fa-whatsapp"></i> WhatsApp Admin</a>
         </div>
       </div>
     </div>`;
-  currentPage='talent-detail';
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── PRICELIST ──
-function renderPricelist(){
-  const pl=getPricelist();
-  const sections=[
-    {key:'chatting',label:'Chatting',icon:'💬',pkg:false},{key:'calling',label:'Calling',icon:'📞',pkg:false},
-    {key:'videocall',label:'Video Call',icon:'🎥',pkg:false},{key:'offline',label:'Offline Date',icon:'📍',pkg:false},
-    {key:'pap',label:'PAP (Pose A Photo)',icon:'📸',pkg:false},{key:'mabar',label:'Mabar / Gaming',icon:'🎮',pkg:false},
-    {key:'paket',label:'Paket Relationship',icon:'💝',pkg:true},{key:'pdkt',label:'Paket PDKT',icon:'💌',pkg:true},
+function renderPricelist() {
+  const el = document.getElementById('pricelistContainer'); if (!el) return;
+  const pl = getPricelist();
+  const SERVICES = [
+    {key:'chatting',label:'💬 Chatting',desc:'Chat santai & asik'},
+    {key:'calling',label:'📞 Calling',desc:'Telepon langsung'},
+    {key:'videocall',label:'🎥 Video Call',desc:'Tatap muka virtual'},
+    {key:'offline',label:'📍 Offline Date',desc:'Jalan bareng'},
+    {key:'pap',label:'📸 PAP',desc:'Photo & proof'},
+    {key:'mabar',label:'🎮 Mabar',desc:'Main game bareng'},
+    {key:'paket',label:'💎 Paket Relationship',desc:'Bundle terlengkap',isPackage:true},
+    {key:'pdkt',label:'💌 PDKT Package',desc:'Paket spesial PDKT',isPackage:true},
   ];
-  const filtered=sections.filter(s=>currentPriceFilter==='all'||s.key===currentPriceFilter);
-  const container=document.getElementById('pricelistContainer');if(!container)return;
-  container.innerHTML=filtered.map(s=>{
-    const items=pl[s.key]||[];
-    return `<div class="price-section reveal" data-cat="${s.key}">
-      <div class="price-section-title"><span>${s.icon}</span> ${s.label} <span style="font-size:.72rem;font-family:var(--font-body);color:var(--text-muted);font-weight:400">${items.length} pilihan</span></div>
-      ${s.pkg?`<div class="package-cards-row">${items.map(pkg=>`
-        <div class="package-card ${pkg.featured?'featured-pkg':''} neon-hover">
-          ${pkg.popular?'<div class="pkg-badge">⭐ Best Seller</div>':''}
-          <div class="pkg-icon">${s.icon}</div>
-          <div class="pkg-name">${pkg.label}</div>
+  const filtered = currentPriceFilter==='all' ? SERVICES : SERVICES.filter(s=>s.key===currentPriceFilter);
+  el.innerHTML = filtered.map(s => {
+    const items = pl[s.key] || [];
+    if (!items.length) return '';
+    if (s.isPackage) {
+      return `<div class="price-section reveal"><h3 class="price-section-title">${s.label} <span style="font-size:.8rem;font-weight:400;color:var(--text-muted)">${s.desc}</span></h3>
+        <div class="package-grid">${items.map(pkg=>`<div class="package-card${pkg.featured?' featured':''}">
+          ${pkg.featured?'<div class="pkg-badge">⭐ Best Value</div>':''}
+          ${pkg.popular?'<div class="pkg-badge popular">🔥 Popular</div>':''}
+          <h4>${pkg.label}</h4>
           <div class="pkg-price">Rp ${pkg.price}</div>
-          <div class="pkg-items">${(pkg.items||[]).map(i=>`<div class="pkg-item">${i}</div>`).join('')}</div>
-          <div style="display:flex;gap:.5rem;margin-top:.5rem">
-            <button class="${pkg.featured?'btn-outline':'btn-primary'}" style="${pkg.featured?'border-color:#fff;color:#fff;':''}flex:1;justify-content:center" onclick="openBookingFromPrice('${pkg.label}','${pkg.price}')">Pesan</button>
-            <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(pkg.label)}" target="_blank" style="width:40px;height:40px;background:${pkg.featured?'rgba(255,255,255,.2)':'var(--pink-light)'};border-radius:50%;display:flex;align-items:center;justify-content:center;color:${pkg.featured?'#fff':'var(--pink-deep)'};font-size:1.1rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
+          <ul class="pkg-items">${(pkg.items||[]).map(i=>`<li><i class="fas fa-check"></i> ${i}</li>`).join('')}</ul>
+          <div style="display:flex;gap:.4rem;margin-top:auto">
+            <button class="btn-primary" style="flex:1;justify-content:center" onclick="openBookingFromPrice('${s.label} — ${pkg.label}','${pkg.price}')">Pesan</button>
+            <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(s.label+' '+pkg.label)}" target="_blank" style="width:36px;height:36px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:1rem;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
           </div>
-        </div>`).join('')}</div>`
-      :`<div class="price-cards-row">${items.map(item=>`
-        <div class="price-item-card ${item.popular?'popular':''} neon-hover">
-          ${item.popular?'<div class="price-item-badge">🔥 Populer</div>':''}
-          <div class="price-item-label">${item.label}</div>
-          <div class="price-item-price">Rp ${item.price}<small>/sesi</small></div>
-          <div style="display:flex;gap:.4rem;margin-top:.75rem">
-            <button class="btn-sm" style="flex:1;justify-content:center" onclick="openBookingFromPrice('${s.label} — ${item.label}','${item.price}')">Pesan</button>
-            <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(s.label+' '+item.label)}" target="_blank" style="width:34px;height:34px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:.9rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
-          </div>
-        </div>`).join('')}</div>`}
-    </div>`;
+        </div>`).join('')}</div></div>`;
+    }
+    return `<div class="price-section reveal"><h3 class="price-section-title">${s.label} <span style="font-size:.8rem;font-weight:400;color:var(--text-muted)">${s.desc}</span></h3>
+      <div class="price-items-grid">${items.map(item=>`<div class="price-item-card${item.popular?' popular':''}">
+        ${item.popular?'<div class="popular-badge">🔥 Terpopuler</div>':''}
+        <div class="price-item-label">${item.label}</div>
+        <div class="price-item-price">Rp ${item.price}<small>/sesi</small></div>
+        <div style="display:flex;gap:.4rem;margin-top:.75rem">
+          <button class="btn-sm" style="flex:1;justify-content:center" onclick="openBookingFromPrice('${s.label} — ${item.label}','${item.price}')">Pesan</button>
+          <a href="https://wa.me/628988995637?text=Mau+pesan+${encodeURIComponent(s.label+' '+item.label)}" target="_blank" style="width:34px;height:34px;background:var(--pink-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--pink-deep);font-size:.9rem;flex-shrink:0;text-decoration:none"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>`).join('')}</div></div>`;
   }).join('');
-  setTimeout(initScrollReveal,60);
+  setTimeout(initScrollReveal, 60);
 }
 
-function filterPrice(cat,btn){currentPriceFilter=cat;document.querySelectorAll('.price-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPricelist();}
+function filterPrice(cat, btn) {
+  currentPriceFilter = cat;
+  document.querySelectorAll('.price-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPricelist();
+}
 
 // ── BOOKING ──
-function openBookingFromPrice(svc,price){bookingData={talent:null,serviceName:svc,servicePrice:price};buildBookingModal();openModal('bookingModal');}
-function openBooking(id){
-  const t=getTalents().find(x=>x.id===id);if(!t)return;
-  if(t.status==='offline'){toast('Talent sedang offline, pilih talent lain','error');return;}
-  if(t.status==='busy'){toast('Talent sedang sibuk, coba lagi nanti','error');return;}
-  bookingData={talent:t,serviceName:null,servicePrice:null};buildBookingModal();openModal('bookingModal');
+function openBookingFromPrice(svc, price) {
+  bookingData = {talent:null, serviceName:svc, servicePrice:price};
+  buildBookingModal();
+  openModal('bookingModal');
 }
 
-function buildBookingModal(){
-  bookingStep=1;
-  const{talent,serviceName,servicePrice}=bookingData;
-  const minDate=new Date().toISOString().split('T')[0];
-  const photoUrl=talent?getTalentPhotoUrl(talent.id):null;
-  const grad=talent?(TALENT_GRADIENTS[talent.id]||['#fce4ed','#e8a4c0']):['#fce4ed','#e8a4c0'];
-  const talentPreview=talent?`
+function openBooking(id) {
+  const t = getTalents().find(x => x.id===id); if (!t) return;
+  if (t.status==='offline') { toast('Talent sedang offline, pilih talent lain','error'); return; }
+  if (t.status==='busy')    { toast('Talent sedang sibuk, coba lagi nanti','error'); return; }
+  bookingData = {talent:t, serviceName:null, servicePrice:null};
+  buildBookingModal();
+  openModal('bookingModal');
+}
+
+function buildBookingModal() {
+  bookingStep = 1;
+  const {talent, serviceName, servicePrice} = bookingData;
+  const minDate = new Date().toISOString().split('T')[0];
+  const photoUrl = talent ? getTalentPhotoUrl(talent.id) : null;
+  const grad = talent ? (TALENT_GRADIENTS[talent.id]||['#fce4ed','#e8a4c0']) : ['#fce4ed','#e8a4c0'];
+  const talentPreview = talent ? `
     <div style="display:flex;align-items:center;gap:1rem;padding:.85rem;background:var(--pink-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
       <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center">
         ${photoUrl?`<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:1.5rem">${talent.avatar}</span>`}
@@ -648,7 +729,7 @@ function buildBookingModal(){
         ${(talent.services||[]).map(s=>`<option>${s}</option>`).join('')}
       </select>
     </div>`
-  :`<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
+  : `<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
       <strong>📦 ${serviceName}</strong>
       <div style="font-size:.82rem;color:var(--text-muted);margin-top:.25rem">Harga: Rp ${servicePrice}</div>
     </div>
@@ -658,8 +739,9 @@ function buildBookingModal(){
         ${getTalents().filter(t=>t.status==='online').map(t=>`<option value="${t.id}">${t.avatar} ${t.name} — ${t.location}</option>`).join('')}
       </select>
     </div>`;
-  const content=document.getElementById('bookingContent');if(!content)return;
-  content.innerHTML=`
+
+  const content = document.getElementById('bookingContent'); if (!content) return;
+  content.innerHTML = `
     <div class="booking-progress"><div class="bp-dot active" id="bp1"></div><div class="bp-dot" id="bp2"></div><div class="bp-dot" id="bp3"></div></div>
     <div class="booking-step active" id="bkStep1">
       <h4 style="font-family:var(--font-display);margin-bottom:1.25rem">1. Pilih Layanan</h4>
@@ -689,145 +771,222 @@ function buildBookingModal(){
     </div>`;
 }
 
-// FIX: Validasi date di step 2, bkTalent null-safe
-function bkNext(step){
-  if(step===2){const d=document.getElementById('bkDate');if(!d||!d.value){toast('Pilih tanggal dulu!','error');return;}}
-  const curr=document.getElementById('bkStep'+step);
-  const next=document.getElementById('bkStep'+(step+1));
-  if(curr)curr.classList.remove('active');if(next)next.classList.add('active');
-  bookingStep=step+1;updateBkProgress();
-}
-function bkPrev(step){
-  const curr=document.getElementById('bkStep'+step);
-  const prev=document.getElementById('bkStep'+(step-1));
-  if(curr)curr.classList.remove('active');if(prev)prev.classList.add('active');
-  bookingStep=step-1;updateBkProgress();
-}
-function updateBkProgress(){[1,2,3].forEach(i=>{const d=document.getElementById('bp'+i);if(d){d.classList.toggle('active',i===bookingStep);d.classList.toggle('done',i<bookingStep);}});}
-
-function submitBookingFinal(){
-  const name=(document.getElementById('bkName')||{}).value||'';
-  const wa=(document.getElementById('bkWa')||{}).value||'';
-  if(!name.trim()||!wa.trim()){toast('Lengkapi nama dan WhatsApp!','error');return;}
-  const{talent,serviceName,servicePrice}=bookingData;
-  const serviceEl=document.getElementById('bkService');
-  const talentEl=document.getElementById('bkTalent');
-  const service=talent?(serviceEl?serviceEl.value:'Chatting'):serviceName;
-  // FIX: null-safe talent selection
-  let talentName='Ditentukan Admin';
-  if(talent){talentName=talent.name;}
-  else if(talentEl&&talentEl.value){const sel=getTalents().find(x=>x.id===talentEl.value);talentName=sel?sel.name:'Ditentukan Admin';}
-  const date=(document.getElementById('bkDate')||{}).value||new Date().toISOString().split('T')[0];
-  const orders=getOrders();
-  orders.unshift({id:'ORD'+String(Date.now()).slice(-6),customer:name.trim(),wa:wa.trim(),talent:talentName,service,date,location:(document.getElementById('bkLocation')||{}).value||'Online',note:(document.getElementById('bkNote')||{}).value||'',status:'Menunggu',total:servicePrice||(talent?talent.price:'0'),createdAt:new Date().toISOString()});
-  setOrders(orders);closeModal('bookingModal');toast('Booking berhasil dikirim! 🎉','success');
-  setTimeout(()=>showNotifModal(`Booking <strong>${service}</strong> dengan <strong>${talentName}</strong> berhasil!<br><br>Konfirmasi dikirim ke WhatsApp <strong>${wa.trim()}</strong> dalam 5–15 menit.`,talent?talent.avatar:'💝'),400);
+function bkNext(step) {
+  if (step===2) { const d=document.getElementById('bkDate'); if(!d||!d.value){toast('Pilih tanggal dulu!','error');return;} }
+  const curr = document.getElementById('bkStep'+step);
+  const next  = document.getElementById('bkStep'+(step+1));
+  if (curr) curr.classList.remove('active');
+  if (next) next.classList.add('active');
+  bookingStep = step+1; updateBkProgress();
 }
 
-// ── REGISTER ──
-function regNext(step){
-  if(step===1){const fields=['reg_nama','reg_umur','reg_gender','reg_kota','reg_wa','reg_email'];for(const f of fields){const el=document.getElementById(f);if(!el||!el.value.trim()){toast('Lengkapi semua field *!','error');return;}}const u=document.getElementById('reg_umur');if(u&&+u.value<18){toast('Minimal usia 18 tahun!','error');return;}}
-  else if(step===2){const b=document.getElementById('reg_bio');if(!b||b.value.trim().length<20){toast('Bio minimal 20 karakter!','error');return;}}
+function bkPrev(step) {
+  const curr = document.getElementById('bkStep'+step);
+  const prev  = document.getElementById('bkStep'+(step-1));
+  if (curr) curr.classList.remove('active');
+  if (prev) prev.classList.add('active');
+  bookingStep = step-1; updateBkProgress();
+}
+
+function updateBkProgress() {
+  [1,2,3].forEach(i => {
+    const d = document.getElementById('bp'+i);
+    if (d) { d.classList.toggle('active', i===bookingStep); d.classList.toggle('done', i<bookingStep); }
+  });
+}
+
+function submitBookingFinal() {
+  const name = (document.getElementById('bkName')||{}).value||'';
+  const wa   = (document.getElementById('bkWa')  ||{}).value||'';
+  if (!name.trim()||!wa.trim()) { toast('Lengkapi nama dan WhatsApp!','error'); return; }
+
+  const {talent, serviceName, servicePrice} = bookingData;
+  const serviceEl = document.getElementById('bkService');
+  const talentEl  = document.getElementById('bkTalent');
+  const service   = talent ? (serviceEl?serviceEl.value:'Chatting') : serviceName;
+
+  let talentName = 'Ditentukan Admin';
+  if (talent) { talentName = talent.name; }
+  else if (talentEl && talentEl.value) {
+    const sel = getTalents().find(x => x.id===talentEl.value);
+    talentName = sel ? sel.name : 'Ditentukan Admin';
+  }
+
+  const date = (document.getElementById('bkDate')||{}).value || new Date().toISOString().split('T')[0];
+  const newOrder = {
+    id:       'ORD' + String(Date.now()).slice(-8),
+    customer: name.trim(),
+    wa:       wa.trim(),
+    talent:   talentName,
+    service,
+    date,
+    location: (document.getElementById('bkLocation')||{}).value||'Online',
+    note:     (document.getElementById('bkNote')||{}).value||'',
+    status:   'Menunggu',
+    total:    servicePrice || (talent?talent.price:'0'),
+    createdAt: Date.now()
+  };
+
+  // Simpan ke Firebase Realtime Database
+  addOrder(newOrder);
+
+  // Juga kirim ke talentApplications jika daftar talent
+  closeModal('bookingModal');
+  toast('Booking berhasil dikirim! 🎉', 'success');
+  setTimeout(() => showNotifModal(
+    `Booking <strong>${service}</strong> dengan <strong>${talentName}</strong> berhasil!<br><br>Konfirmasi dikirim ke WhatsApp <strong>${wa.trim()}</strong> dalam 5–15 menit.`,
+    talent ? talent.avatar : '💝'
+  ), 400);
+}
+
+// ── REGISTER TALENT ──
+function regNext(step) {
+  if (step===1) {
+    const fields=['reg_nama','reg_umur','reg_gender','reg_kota','reg_wa','reg_email'];
+    for (const f of fields) { const el=document.getElementById(f); if(!el||!el.value.trim()){toast('Lengkapi semua field *!','error');return;} }
+    const u=document.getElementById('reg_umur'); if(u&&+u.value<18){toast('Minimal usia 18 tahun!','error');return;}
+  } else if (step===2) {
+    const b=document.getElementById('reg_bio'); if(!b||b.value.trim().length<20){toast('Bio minimal 20 karakter!','error');return;}
+  }
   goRegStep(step+1);
 }
-function regPrev(step){goRegStep(step-1);}
-function goRegStep(n){
-  document.querySelectorAll('.reg-step').forEach(s=>s.classList.remove('active'));
-  const s=document.getElementById('regStep'+n);if(s)s.classList.add('active');
-  document.querySelectorAll('.step-indicator .step:not(.step-line)').forEach((s,i)=>{s.classList.toggle('active',i+1===n);s.classList.toggle('done',i+1<n);});
-  document.querySelectorAll('.step-indicator .step-line').forEach((l,i)=>l.classList.toggle('filled',i+1<n));
+
+function regPrev(step) { goRegStep(step-1); }
+
+function goRegStep(n) {
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById('regStep'+n); if (s) s.classList.add('active');
+  document.querySelectorAll('.step-indicator .step:not(.step-line)').forEach((s,i) => {
+    s.classList.toggle('active', i+1===n); s.classList.toggle('done', i+1<n);
+  });
+  document.querySelectorAll('.step-indicator .step-line').forEach((l,i) => l.classList.toggle('filled', i+1<n));
 }
 
-function submitRegister(){
-  const services=Array.from(document.querySelectorAll('.reg-service:checked')).map(c=>c.value);
-  const schedule=Array.from(document.querySelectorAll('.reg-schedule:checked')).map(c=>c.value);
-  if(!services.length){toast('Pilih minimal 1 layanan!','error');return;}
-  if(!schedule.length){toast('Pilih minimal 1 jadwal!','error');return;}
-  const talents=getTalents();const newId='t'+String(Date.now()).slice(-5);const pass='talent'+Math.floor(1000+Math.random()*9000);
-  const emojis=['🌸','🌺','🌙','⭐','✨','🎵','💫','🦋'];
-  const g=f=>document.getElementById(f);
-  const newT={id:newId,name:g('reg_nama').value.trim(),nickname:g('reg_panggilan').value.trim(),age:+g('reg_umur').value,gender:g('reg_gender').value,location:g('reg_kota').value.trim(),bio:g('reg_bio').value.trim(),hobbies:'Belum diisi',services,schedule,rating:0,bookings:0,price:'26K',status:'offline',avatar:emojis[Math.floor(Math.random()*emojis.length)],verified:false,pendingApproval:true,ig:g('reg_ig')?g('reg_ig').value:'',tiktok:g('reg_tiktok')?g('reg_tiktok').value:'',username:'talent_'+newId,password:pass,email:g('reg_email').value.trim(),wa:g('reg_wa').value.trim()};
-  talents.push(newT);setTalents(talents);
-  toast('Pendaftaran berhasil! 🎉','success');
-  showNotifModal(`Pendaftaran berhasil!<br><br>Admin akan menghubungi via WhatsApp dalam 1×24 jam.<br><br><strong>Username:</strong> ${newT.username}<br><strong>Password:</strong> ${pass}<br><small style="color:var(--text-muted)">Simpan dengan aman</small>`,'🌟');
-  setTimeout(()=>showPage('landing'),3000);
+function submitRegister() {
+  const services  = Array.from(document.querySelectorAll('.reg-service:checked')).map(c=>c.value);
+  const schedule  = Array.from(document.querySelectorAll('.reg-schedule:checked')).map(c=>c.value);
+  if (!services.length) { toast('Pilih minimal 1 layanan!','error'); return; }
+  if (!schedule.length) { toast('Pilih minimal 1 jadwal!','error'); return; }
+
+  const g = f => document.getElementById(f);
+  const newId = 'ta' + String(Date.now()).slice(-7);
+  const pass  = 'talent' + Math.floor(1000+Math.random()*9000);
+  const emojis = ['🌸','🌺','🌙','⭐','✨','🎵','💫','🦋'];
+
+  const newT = {
+    id:newId, name:g('reg_nama').value.trim(), nickname:g('reg_panggilan').value.trim(),
+    age:+g('reg_umur').value, gender:g('reg_gender').value, location:g('reg_kota').value.trim(),
+    bio:g('reg_bio').value.trim(), hobbies:'Belum diisi', services, schedule,
+    rating:0, bookings:0, price:'26K', status:'offline',
+    avatar:emojis[Math.floor(Math.random()*emojis.length)],
+    verified:false, pendingApproval:true,
+    ig:    g('reg_ig')     ? g('reg_ig').value     : '',
+    tiktok:g('reg_tiktok') ? g('reg_tiktok').value : '',
+    username:'talent_'+newId, password:pass,
+    email:g('reg_email').value.trim(), wa:g('reg_wa').value.trim(),
+    createdAt: Date.now()
+  };
+
+  // Simpan ke Firebase
+  const talents = getTalents();
+  talents.push(newT);
+  setTalents(talents);
+
+  // Simpan juga ke talentApplications (untuk admin review)
+  db.ref('talentApplications/' + newId).set({
+    ...newT,
+    status: 'Menunggu Seleksi'
+  }).catch(e => console.error('talentApplications error:', e));
+
+  toast('Pendaftaran berhasil! 🎉', 'success');
+  showNotifModal(`Pendaftaran berhasil!<br><br>Admin akan menghubungi via WhatsApp dalam 1×24 jam.<br><br><strong>Username:</strong> ${newT.username}<br><strong>Password:</strong> ${pass}<br><small style="color:var(--text-muted)">Simpan dengan aman</small>`, '🌟');
+  setTimeout(() => showPage('landing'), 3000);
 }
 
-
-// ── DASHBOARD DRAWER (Mobile) ──
+// ── DASHBOARD DRAWER ──
 function openDashSidebar(type) {
-  const sidebar = document.getElementById(type === 'admin' ? 'adminSidebar' : 'talentSidebar');
-  const overlay = document.getElementById(type === 'admin' ? 'adminOverlay' : 'talentOverlay');
+  const sidebar  = document.getElementById(type==='admin'?'adminSidebar':'talentSidebar');
+  const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.add('open');
   if (overlay) overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeDashSidebar(type) {
-  const sidebar = document.getElementById(type === 'admin' ? 'adminSidebar' : 'talentSidebar');
-  const overlay = document.getElementById(type === 'admin' ? 'adminOverlay' : 'talentOverlay');
+  const sidebar  = document.getElementById(type==='admin'?'adminSidebar':'talentSidebar');
+  const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 }
 
-// Close drawer on ESC key
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeDashSidebar('admin');
-    closeDashSidebar('talent');
-  }
-});
-
 // ── AUTH ──
-function showLoginModal(){openModal('loginModal');}
-function handleLogin(){
-  const user=(document.getElementById('loginUser')||{}).value||'';
-  const pass=(document.getElementById('loginPass')||{}).value||'';
-  if(!user.trim()||!pass.trim()){toast('Isi username dan password!','error');return;}
-  if(user==='admin'&&pass==='admin123'){currentUser={role:'admin',name:'Admin Lovia',username:'admin'};lsSet('lovia_session',currentUser);closeModal('loginModal');toast('Selamat datang, Admin! 👑','success');setTimeout(()=>showPage('admin'),500);return;}
-  const t=getTalents().find(x=>x.username===user&&x.password===pass);
-  if(t){if(t.pendingApproval&&!t.verified){toast('Akunmu masih dalam proses seleksi','error');return;}currentUser={role:'talent',name:t.name,talentId:t.id,username:t.username};lsSet('lovia_session',currentUser);closeModal('loginModal');toast(`Selamat datang, ${t.nickname||t.name}! ✨`,'success');setTimeout(()=>showPage('talent-dash'),500);return;}
+function showLoginModal() { openModal('loginModal'); }
+
+function handleLogin() {
+  const user = (document.getElementById('loginUser')||{}).value||'';
+  const pass = (document.getElementById('loginPass')||{}).value||'';
+  if (!user.trim()||!pass.trim()) { toast('Isi username dan password!','error'); return; }
+
+  if (user==='admin' && pass==='admin123') {
+    currentUser = {role:'admin', name:'Admin Lovia', username:'admin'};
+    lsSet('lovia_session', currentUser);
+    closeModal('loginModal');
+    toast('Selamat datang, Admin! 👑','success');
+    setTimeout(() => showPage('admin'), 500);
+    return;
+  }
+
+  const t = getTalents().find(x => x.username===user && x.password===pass);
+  if (t) {
+    if (t.pendingApproval && !t.verified) { toast('Akunmu masih dalam proses seleksi','error'); return; }
+    currentUser = {role:'talent', name:t.name, talentId:t.id, username:t.username};
+    lsSet('lovia_session', currentUser);
+    closeModal('loginModal');
+    toast(`Selamat datang, ${t.nickname||t.name}! ✨`,'success');
+    setTimeout(() => showPage('talent-dash'), 500);
+    return;
+  }
   toast('Username atau password salah!','error');
 }
-function logout(){
-  currentUser=null;
+
+function logout() {
+  currentUser = null;
   localStorage.removeItem('lovia_session');
   closeDashSidebar('admin');
   closeDashSidebar('talent');
-  document.body.style.overflow='';
+  document.body.style.overflow = '';
   toast('Berhasil logout! 👋','info');
-  setTimeout(()=>showPage('landing'),300);
+  setTimeout(() => showPage('landing'), 300);
 }
 
-// ── ADMIN ──
-function renderAdminDash(){showAdminTab('overview');}
-function showAdminTab(tab){
-  // Close drawer on mobile
+// ══════════════════════════════════════════════════════
+//  ADMIN DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderAdminDash() { showAdminTab('overview'); }
+
+function showAdminTab(tab) {
   closeDashSidebar('admin');
-  // Hide all tabs
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  const el=document.getElementById('admin-tab-'+tab);if(el)el.classList.add('active');
-  // Update active link
-  document.querySelectorAll('#adminSidebar .db-link').forEach(l=>{
-    const onclick=l.getAttribute('onclick')||'';
-    l.classList.toggle('active', onclick.includes("'"+tab+"'"));
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('admin-tab-'+tab); if (el) el.classList.add('active');
+  document.querySelectorAll('#adminSidebar .db-link').forEach(l => {
+    const oc = l.getAttribute('onclick')||'';
+    l.classList.toggle('active', oc.includes("'"+tab+"'"));
   });
-  const c=document.getElementById('admin-tab-'+tab);if(!c)return;
-  if(tab==='overview')renderAdminOverview(c);
-  else if(tab==='talents')renderAdminTalents(c);
-  else if(tab==='orders')renderAdminOrders(c);
-  else if(tab==='pricelist')renderAdminPricelist(c);
-  else if(tab==='testimonials')renderAdminTestimonials(c);
-  else if(tab==='settings')renderAdminSettings(c);
-  // Scroll content to top
-  const content=document.getElementById('adminContent');
-  if(content)content.scrollTop=0;
+  const c = document.getElementById('admin-tab-'+tab); if (!c) return;
+  if (tab==='overview')     renderAdminOverview(c);
+  else if (tab==='talents') renderAdminTalents(c);
+  else if (tab==='orders')  renderAdminOrders(c);
+  else if (tab==='pricelist')     renderAdminPricelist(c);
+  else if (tab==='testimonials')  renderAdminTestimonials(c);
+  else if (tab==='settings')      renderAdminSettings(c);
+  const content = document.getElementById('adminContent');
+  if (content) content.scrollTop = 0;
 }
 
-function renderAdminOverview(el){
-  const talents=getTalents(),orders=getOrders(),pending=talents.filter(t=>t.pendingApproval);
-  el.innerHTML=`
+function renderAdminOverview(el) {
+  const talents = getTalents(), orders = getOrders(), pending = talents.filter(t=>t.pendingApproval&&!t.verified);
+  el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem">
       <div><h2 style="font-family:var(--font-display);font-size:1.5rem">Selamat datang, Admin! 👑</h2><p style="color:var(--text-muted);font-size:.83rem">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>
       <div style="display:flex;gap:.6rem"><button class="btn-sm" onclick="showAdminTab('talents')"><i class="fas fa-users"></i> Kelola Talent</button><button class="btn-primary" onclick="showAdminTab('orders')"><i class="fas fa-shopping-bag"></i> Pesanan</button></div>
@@ -839,172 +998,239 @@ function renderAdminOverview(el){
       <div class="dash-stat-card" style="border-top:3px solid var(--purple-deep)"><div class="dsc-icon">⏳</div><div class="dsc-val">${pending.length}</div><div class="dsc-label">Pending Daftar</div></div>
     </div>
     <div class="admin-2col-grid">
-      <div class="dash-section"><h3>📋 Pendaftar Baru</h3>${pending.length?pending.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.4rem">${t.avatar}</span><div><strong style="font-size:.85rem">${t.name}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.location} · ${t.age}thn</div></div></div><div style="display:flex;gap:.3rem"><button class="btn-sm" onclick="approveTalent('${t.id}')" style="border-color:#48bb78;color:#48bb78;padding:.3rem .6rem">✓</button><button class="btn-sm" onclick="rejectTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444;padding:.3rem .6rem">✗</button></div></div>`).join(''):'<p style="color:var(--text-muted);font-size:.85rem">Tidak ada pendaftar baru</p>'}</div>
-      <div class="dash-section"><h3>📈 Statistik Pesanan</h3><div style="font-size:.85rem;display:flex;flex-direction:column;gap:.5rem"><div style="display:flex;justify-content:space-between"><span>Menunggu</span><strong style="color:#d97706">${orders.filter(o=>o.status==='Menunggu').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Aktif</span><strong style="color:#059669">${orders.filter(o=>o.status==='Aktif').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Selesai</span><strong style="color:#2563eb">${orders.filter(o=>o.status==='Selesai').length}</strong></div><div style="display:flex;justify-content:space-between"><span>Ditolak</span><strong style="color:#dc2626">${orders.filter(o=>o.status==='Ditolak').length}</strong></div></div></div>
-    </div>`;
+      <div class="dash-section"><h3>📋 Pendaftar Baru</h3>${pending.length?pending.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.4rem">${t.avatar}</span><div><strong style="font-size:.85rem">${t.name}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.location} · ${t.age}thn</div></div></div><div style="display:flex;gap:.3rem"><button class="btn-sm" onclick="approveTalent('${t.id}')" style="border-color:#48bb78;color:#48bb78;padding:.3rem .6rem">✓ Setuju</button><button class="btn-sm" onclick="rejectTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444;padding:.3rem .6rem">✗ Tolak</button></div></div>`).join(''):'<p style="color:var(--text-muted);font-size:.85rem">Tidak ada pendaftar baru</p>'}</div>
+      <div class="dash-section"><h3>📈 Statistik Pesanan</h3><div style="font-size:.85rem;display:flex;flex-direction:column;gap:.5rem">
+        <div style="display:flex;justify-content:space-between"><span>Menunggu</span><strong style="color:#d97706">${orders.filter(o=>o.status==='Menunggu').length}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span>Aktif</span><strong style="color:#059669">${orders.filter(o=>o.status==='Aktif').length}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span>Selesai</span><strong style="color:#2563eb">${orders.filter(o=>o.status==='Selesai').length}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span>Ditolak</span><strong style="color:#dc2626">${orders.filter(o=>o.status==='Ditolak').length}</strong></div>
+      </div></div>
+    </div>
+    <div class="dash-section"><h3>📋 Order Terbaru</h3><div class="table-scroll">${ordersTable(orders.slice(0,10), true)}</div></div>`;
 }
 
-function renderAdminTalents(el){
-  const talents=getTalents();
-  // Pisahkan cewe dan cowo
-  const cewe=talents.filter(t=>t.gender==='Perempuan');
-  const cowo=talents.filter(t=>t.gender==='Laki-laki');
-  el.innerHTML=`
+function renderAdminTalents(el) {
+  const talents = getTalents();
+  const cewe = talents.filter(t=>t.gender==='Perempuan');
+  const cowo  = talents.filter(t=>t.gender==='Laki-laki');
+  el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
       <h2 style="font-family:var(--font-display)">Kelola Talent 👥</h2>
       <div class="search-wrap" style="min-width:220px"><i class="fas fa-search"></i><input type="text" placeholder="Cari nama / kota..." oninput="adminSearchTalent(this.value)" /></div>
     </div>
     <div class="dash-section">
-      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Talent</th><th>Kota</th><th>Status</th><th>Rating</th><th>Verified</th><th>Pending</th><th>Aksi</th></tr></thead><tbody id="adminTalentRows">${buildTalentRows(talents)}</tbody></table></div>
+      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Talent</th><th>Kota</th><th>Status</th><th>Rating</th><th>Verified</th><th>Pending</th><th>Aksi</th></tr></thead>
+      <tbody id="adminTalentRows">${buildTalentRows(talents)}</tbody></table></div>
     </div>
-
-    <!-- AKUN LOGIN TALENT -->
     <div class="dash-section" style="margin-top:1.5rem">
       <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:1rem">🔐 Akun Login Talent — RAHASIA</h3>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1rem">Jangan bagikan ke siapapun selain talent yang bersangkutan.</p>
-
       <h4 style="font-size:.85rem;font-weight:700;color:var(--pink-deep);margin-bottom:.6rem">👧 Talent Cewe</h4>
       <div class="table-scroll" style="margin-bottom:1.25rem">
-        <table class="admin-table">
-          <thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
-          <tbody>
-            ${cewe.map((t,i)=>`<tr>
-              <td style="color:var(--text-muted);font-size:.78rem">${i+1}</td>
-              <td><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.nickname||t.name}</small></td>
-              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td>
-              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td>
-              <td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td>
-            </tr>`).join('')}
-          </tbody>
+        <table class="admin-table"><thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+        <tbody>${cewe.map((t,i)=>`<tr><td style="color:var(--text-muted);font-size:.78rem">${i+1}</td><td><strong>${t.name}</strong></td><td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td><td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td><td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td></tr>`).join('')}</tbody>
         </table>
       </div>
-
       <h4 style="font-size:.85rem;font-weight:700;color:var(--purple);margin-bottom:.6rem">👦 Talent Cowo</h4>
       <div class="table-scroll">
-        <table class="admin-table">
-          <thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
-          <tbody>
-            ${cowo.map((t,i)=>`<tr>
-              <td style="color:var(--text-muted);font-size:.78rem">${i+1}</td>
-              <td><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.nickname||t.name}</small></td>
-              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td>
-              <td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td>
-              <td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td>
-            </tr>`).join('')}
-          </tbody>
+        <table class="admin-table"><thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+        <tbody>${cowo.map((t,i)=>`<tr><td style="color:var(--text-muted);font-size:.78rem">${i+1}</td><td><strong>${t.name}</strong></td><td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.username}</code></td><td><code style="background:var(--bg);padding:.15rem .4rem;border-radius:4px;font-size:.83rem">${t.password}</code></td><td><span class="status-badge ${t.status==='online'?'badge-active':'badge-rejected'}">${t.status}</span></td></tr>`).join('')}</tbody>
         </table>
       </div>
     </div>`;
 }
 
-function buildTalentRows(talents){
-  return talents.map(t=>{
-    const photoUrl=getTalentPhotoUrl(t.id);
-    const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-    const avatarHtml=photoUrl?`<img src="${photoUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`:`<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,${grad[0]},${grad[1]});display:flex;align-items:center;justify-content:center;font-size:1.2rem">${t.avatar}</div>`;
-    return `<tr><td><div style="display:flex;align-items:center;gap:.6rem">${avatarHtml}<div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.age}thn·${t.gender}·<em>${t.username}</em></small></div></div></td><td>${t.location}</td><td><span class="status-badge ${t.status==='online'?'badge-active':t.status==='busy'?'badge-pending':'badge-rejected'}">${t.status}</span></td><td>⭐${t.rating||'—'}</td><td>${t.verified?'<span style="color:#48bb78">✓</span>':'<span style="color:var(--text-muted)">—</span>'}</td><td>${t.pendingApproval?'<span style="color:#d97706">⏳</span>':'<span style="color:var(--text-muted)">—</span>'}</td><td><div style="display:flex;gap:.3rem;flex-wrap:wrap"><button class="btn-sm" onclick="toggleVerify('${t.id}')">${t.verified?'Unverify':'Verify'}</button>${t.pendingApproval?`<button class="btn-sm" onclick="approveTalent('${t.id}')" style="border-color:#48bb78;color:#48bb78">OK</button>`:''}<button class="btn-sm" onclick="deleteTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444">Del</button></div></td></tr>`;
-  }).join('');
+function buildTalentRows(talents) {
+  return talents.map(t => `<tr>
+    <td><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.3rem">${t.avatar}</span><div><strong style="font-size:.85rem">${t.name}</strong><div style="font-size:.73rem;color:var(--text-muted)">${t.gender} · ${t.age}thn</div></div></div></td>
+    <td style="font-size:.83rem">${t.location}</td>
+    <td><span class="status-badge ${t.status==='online'?'badge-active':t.status==='busy'?'badge-pending':'badge-rejected'}">${t.status}</span></td>
+    <td>⭐ ${t.rating}</td>
+    <td><span class="status-badge ${t.verified?'badge-done':'badge-pending'}">${t.verified?'✓ Ya':'Belum'}</span></td>
+    <td><span class="status-badge ${t.pendingApproval?'badge-pending':'badge-done'}">${t.pendingApproval?'⏳ Ya':'Tidak'}</span></td>
+    <td><div style="display:flex;gap:.3rem;flex-wrap:wrap">
+      <button class="btn-sm" onclick="toggleVerify('${t.id}')" style="font-size:.72rem;padding:.25rem .5rem">${t.verified?'Unverify':'Verify'}</button>
+      ${t.pendingApproval?`<button class="btn-sm" onclick="approveTalent('${t.id}')" style="border-color:#48bb78;color:#48bb78;font-size:.72rem;padding:.25rem .5rem">✓</button><button class="btn-sm" onclick="rejectTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444;font-size:.72rem;padding:.25rem .5rem">✗</button>`:''}
+      <button class="btn-sm" onclick="deleteTalent('${t.id}')" style="border-color:#ef4444;color:#ef4444;font-size:.72rem;padding:.25rem .5rem"><i class="fas fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
 }
 
-function adminSearchTalent(q){
-  const r=document.getElementById('adminTalentRows');
-  if(r)r.innerHTML=buildTalentRows(getTalents().filter(t=>
-    t.name.toLowerCase().includes(q.toLowerCase())||
-    t.location.toLowerCase().includes(q.toLowerCase())||
-    (t.gender||'').toLowerCase().includes(q.toLowerCase())
-  ));
+function adminSearchTalent(q) {
+  const talents = getTalents().filter(t => t.name.toLowerCase().includes(q.toLowerCase())||t.location.toLowerCase().includes(q.toLowerCase()));
+  const rows = document.getElementById('adminTalentRows');
+  if (rows) rows.innerHTML = buildTalentRows(talents);
 }
 
-function renderAdminOrders(el){
-  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pesanan 📦</h2><select onchange="filterAdminOrders(this.value)" style="padding:.45rem .85rem;border:1px solid var(--border);border-radius:50px;background:var(--bg);color:var(--text);font-size:.83rem"><option value="">Semua Status</option><option>Menunggu</option><option>Aktif</option><option>Selesai</option><option>Ditolak</option></select></div>
-    <div class="dash-section"><div class="table-scroll" id="ordersTableWrap">${ordersTable(getOrders(),true)}</div></div>`;
+function renderAdminOrders(el) {
+  const orders = getOrders();
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pesanan 📦</h2><span style="font-size:.8rem;color:var(--text-muted)">Total: ${orders.length} pesanan · Data real-time Firebase</span></div>
+    <div class="dash-section"><div class="table-scroll">${ordersTable(orders, true)}</div></div>`;
 }
-function filterAdminOrders(status){const orders=status?getOrders().filter(o=>o.status===status):getOrders();const w=document.getElementById('ordersTableWrap');if(w)w.innerHTML=ordersTable(orders,true);}
-function ordersTable(orders,editable=false){
-  return `<table class="admin-table"><thead><tr><th>ID</th><th>Customer</th><th>Talent</th><th>Layanan</th><th>Tanggal</th><th>Total</th><th>Status</th>${editable?'<th>Ubah</th>':''}</tr></thead><tbody>${orders.map(o=>`<tr><td style="font-size:.72rem;color:var(--text-muted);font-family:monospace">${o.id}</td><td><strong>${o.customer}</strong>${o.wa?`<br><small style="color:var(--text-muted)">${o.wa}</small>`:''}</td><td>${o.talent}</td><td style="font-size:.82rem">${o.service}</td><td style="font-size:.82rem">${o.date}</td><td style="font-weight:700;color:var(--pink-deep)">Rp ${o.total}</td><td><span class="status-badge ${o.status==='Selesai'?'badge-done':o.status==='Aktif'?'badge-active':o.status==='Ditolak'?'badge-rejected':'badge-pending'}">${o.status}</span></td>${editable?`<td><select style="font-size:.78rem;border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;background:var(--bg);color:var(--text)" onchange="updateOrderStatus('${o.id}',this.value)"><option ${o.status==='Menunggu'?'selected':''}>Menunggu</option><option ${o.status==='Aktif'?'selected':''}>Aktif</option><option ${o.status==='Selesai'?'selected':''}>Selesai</option><option ${o.status==='Ditolak'?'selected':''}>Ditolak</option></select></td>`:''}</tr>`).join('')}</tbody></table>`;
-}
-function updateOrderStatus(id,status){const orders=getOrders();const i=orders.findIndex(o=>o.id===id);if(i>=0){orders[i].status=status;setOrders(orders);toast('Status diperbarui ✓','success');}}
 
-function renderAdminPricelist(el){
-  const pl=getPricelist();
+function ordersTable(orders, editable=false) {
+  if (!orders.length) return '<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>Belum ada order</p></div>';
+  return `<table class="admin-table"><thead><tr><th>ID</th><th>Customer</th><th>Talent</th><th>Layanan</th><th>Tanggal</th><th>Total</th><th>Status</th>${editable?'<th>Ubah</th>':''}</tr></thead><tbody>
+    ${orders.map(o=>`<tr>
+      <td style="font-size:.72rem;color:var(--text-muted);font-family:monospace">${o.id}</td>
+      <td><strong>${o.customer}</strong>${o.wa?`<br><small style="color:var(--text-muted)">${o.wa}</small>`:''}</td>
+      <td>${o.talent}</td>
+      <td style="font-size:.82rem">${o.service}</td>
+      <td style="font-size:.82rem">${o.date}</td>
+      <td style="font-weight:700;color:var(--pink-deep)">Rp ${o.total}</td>
+      <td><span class="status-badge ${o.status==='Selesai'?'badge-done':o.status==='Aktif'?'badge-active':o.status==='Ditolak'?'badge-rejected':'badge-pending'}">${o.status}</span></td>
+      ${editable?`<td><select style="font-size:.78rem;border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;background:var(--bg);color:var(--text)" onchange="updateOrderStatus('${o.id}',this.value)"><option ${o.status==='Menunggu'?'selected':''}>Menunggu</option><option ${o.status==='Aktif'?'selected':''}>Aktif</option><option ${o.status==='Selesai'?'selected':''}>Selesai</option><option ${o.status==='Ditolak'?'selected':''}>Ditolak</option></select></td>`:''}
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function renderAdminPricelist(el) {
+  const pl = getPricelist();
   const cats=[['chatting','💬 Chatting'],['calling','📞 Calling'],['videocall','🎥 Video Call'],['offline','📍 Offline Date'],['pap','📸 PAP'],['mabar','🎮 Mabar']];
-  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pricelist 💰</h2><span style="font-size:.8rem;color:var(--text-muted)">Edit langsung → tersimpan otomatis</span></div>
-    ${cats.map(([cat,label])=>`<div class="dash-section"><h3 style="display:flex;align-items:center;justify-content:space-between">${label}<button class="btn-sm" onclick="addPrice('${cat}')"><i class="fas fa-plus"></i> Tambah</button></h3><div class="table-scroll"><table class="admin-table"><thead><tr><th>Label</th><th>Harga (Rp)</th><th>Populer</th><th>Hapus</th></tr></thead><tbody>${(pl[cat]||[]).map((item,i)=>`<tr><td><input type="text" value="${item.label}" onchange="updatePrice('${cat}',${i},'label',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .6rem;width:100%;color:var(--text);font-size:.83rem"/></td><td><input type="text" value="${item.price}" onchange="updatePrice('${cat}',${i},'price',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .6rem;width:120px;color:var(--text);font-size:.83rem"/></td><td style="text-align:center"><input type="checkbox" ${item.popular?'checked':''} onchange="updatePrice('${cat}',${i},'popular',this.checked)"/></td><td><button class="btn-sm" onclick="deletePrice('${cat}',${i})" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`).join('')}`;
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pricelist 💰</h2><span style="font-size:.8rem;color:var(--text-muted)">Edit langsung → tersimpan ke Firebase</span></div>
+    ${cats.map(([cat,label])=>`<div class="dash-section"><h3 style="display:flex;align-items:center;justify-content:space-between">${label}<button class="btn-sm" onclick="addPrice('${cat}')"><i class="fas fa-plus"></i> Tambah</button></h3>
+    <div class="table-scroll"><table class="admin-table"><thead><tr><th>Label</th><th>Harga (Rp)</th><th>Populer</th><th>Hapus</th></tr></thead><tbody>
+    ${(pl[cat]||[]).map((item,i)=>`<tr>
+      <td><input type="text" value="${item.label}" onchange="updatePrice('${cat}',${i},'label',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .6rem;width:100%;color:var(--text);font-size:.83rem"/></td>
+      <td><input type="text" value="${item.price}" onchange="updatePrice('${cat}',${i},'price',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .6rem;width:120px;color:var(--text);font-size:.83rem"/></td>
+      <td style="text-align:center"><input type="checkbox" ${item.popular?'checked':''} onchange="updatePrice('${cat}',${i},'popular',this.checked)"/></td>
+      <td><button class="btn-sm" onclick="deletePrice('${cat}',${i})" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('')}
+    </tbody></table></div></div>`).join('')}`;
 }
-function updatePrice(cat,i,field,val){const pl=getPricelist();if(!pl[cat]||!pl[cat][i])return;pl[cat][i][field]=field==='popular'?Boolean(val):val;setPricelist(pl);toast('Tersimpan ✓','success');}
-function deletePrice(cat,i){const pl=getPricelist();pl[cat].splice(i,1);setPricelist(pl);renderAdminPricelist(document.getElementById('admin-tab-pricelist'));toast('Dihapus','info');}
-function addPrice(cat){const pl=getPricelist();if(!pl[cat])pl[cat]=[];pl[cat].push({label:'Item Baru',price:'0',popular:false});setPricelist(pl);renderAdminPricelist(document.getElementById('admin-tab-pricelist'));}
 
-function renderAdminTestimonials(el){
-  const ts=getTestimonials();
-  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem"><h2 style="font-family:var(--font-display)">Kelola Testimoni ⭐</h2></div>
-    <div class="dash-section"><div class="table-scroll"><table class="admin-table"><thead><tr><th>User</th><th>Rating</th><th>Teks</th><th>Layanan</th><th>Aksi</th></tr></thead><tbody>${ts.map((t,i)=>`<tr><td>${t.avatar} <strong>${t.name}</strong></td><td>${'⭐'.repeat(t.rating)}</td><td style="max-width:200px;font-size:.78rem;color:var(--text-sec)">${t.text.slice(0,90)}...</td><td><span class="testi-service">${t.service}</span></td><td><button class="btn-sm" onclick="deleteTestimonial(${i})" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+function updatePrice(cat, i, field, val) {
+  const pl = getPricelist();
+  if (!pl[cat]||!pl[cat][i]) return;
+  pl[cat][i][field] = field==='popular' ? Boolean(val) : val;
+  setPricelist(pl);
+  toast('Tersimpan ke Firebase ✓','success');
 }
-function deleteTestimonial(i){const ts=getTestimonials();ts.splice(i,1);setTestimonials(ts);renderAdminTestimonials(document.getElementById('admin-tab-testimonials'));toast('Dihapus','info');}
 
-function renderAdminSettings(el){
-  el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pengaturan ⚙️</h2>
+function deletePrice(cat, i) {
+  const pl = getPricelist();
+  pl[cat].splice(i,1);
+  setPricelist(pl);
+  renderAdminPricelist(document.getElementById('admin-tab-pricelist'));
+  toast('Dihapus','info');
+}
+
+function addPrice(cat) {
+  const pl = getPricelist();
+  if (!pl[cat]) pl[cat]=[];
+  pl[cat].push({label:'Item Baru',price:'0',popular:false});
+  setPricelist(pl);
+  renderAdminPricelist(document.getElementById('admin-tab-pricelist'));
+}
+
+function renderAdminTestimonials(el) {
+  const ts = getTestimonials();
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem"><h2 style="font-family:var(--font-display)">Kelola Testimoni ⭐</h2></div>
+    <div class="dash-section"><div class="table-scroll"><table class="admin-table"><thead><tr><th>User</th><th>Rating</th><th>Teks</th><th>Layanan</th><th>Aksi</th></tr></thead><tbody>
+    ${ts.map((t,i)=>`<tr>
+      <td>${t.avatar} <strong>${t.name}</strong></td>
+      <td>${'⭐'.repeat(t.rating)}</td>
+      <td style="max-width:200px;font-size:.78rem;color:var(--text-sec)">${t.text.slice(0,90)}...</td>
+      <td><span class="testi-service">${t.service}</span></td>
+      <td><button class="btn-sm" onclick="deleteTestimonial(${i})" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+
+function deleteTestimonial(i) {
+  const ts = getTestimonials(); ts.splice(i,1); setTestimonials(ts);
+  renderAdminTestimonials(document.getElementById('admin-tab-testimonials'));
+  toast('Dihapus','info');
+}
+
+function renderAdminSettings(el) {
+  el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pengaturan ⚙️</h2>
     <div class="admin-2col-grid">
       <div class="dash-section"><h3>🔐 Akun Admin</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Username: <strong>admin</strong></div><div>Password: <strong>admin123</strong></div><div>Role: <strong>Super Admin</strong></div></div></div>
-      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Lovia Partner v2.1</strong></div><div>Storage: <strong>LocalStorage</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
+      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Lovia Partner v3.0</strong></div><div>Storage: <strong>Firebase Realtime Database ✅</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
       <div class="dash-section"><h3>🎨 Tema</h3><div style="display:flex;gap:.75rem"><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('lovia_theme','light');updateThemeIcon('light');toast('Terang aktif','info')">☀️ Terang</button><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('lovia_theme','dark');updateThemeIcon('dark');toast('Gelap aktif','info')">🌙 Gelap</button></div></div>
-      <div class="dash-section"><h3>🗑️ Reset Data</h3><p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">Reset semua data ke kondisi awal</p><button class="btn-outline" onclick="resetData()" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-redo"></i> Reset Semua</button></div>
-      <div class="dash-section" style="grid-column:1/-1"><h3>📸 Panduan Foto Talent (Google Drive)</h3>
-        <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:.75rem">Edit objek <code style="background:var(--bg);padding:.1rem .4rem;border-radius:4px">TALENT_PHOTOS</code> di <strong>app.js</strong> untuk menambahkan foto dari Google Drive.</p>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-family:monospace;font-size:.77rem;line-height:1.9">
-          📁 Folder Wanita ID: <strong>1f45BbsmdGuTKjgiyz75H9wGbDEVWDhQB</strong><br>
-          📁 Folder Pria ID: <strong>1lXAU4agkP_xI-xzvjGFG8OBsErQMc4o-</strong><br>
-          🔗 Format URL: <code>https://drive.google.com/thumbnail?id=FILE_ID&sz=w400</code><br>
-          ✏️ Contoh pengisian: <code>main: GDRIVE_BASE + 'abc123xyz' + GDRIVE_SZ</code>
-        </div>
-      </div>
+      <div class="dash-section"><h3>🗑️ Reset Data Firebase</h3><p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">Hapus semua data dari Firebase (tidak bisa dibatalkan)</p><button class="btn-outline" onclick="resetData()" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-redo"></i> Reset Semua</button></div>
     </div>`;
 }
 
-function resetData(){if(confirm('Reset semua data?\nTidak bisa dibatalkan.')){['lovia_talents','lovia_orders','lovia_pricelist','lovia_testimonials'].forEach(k=>localStorage.removeItem(k));toast('Data direset!','info');renderAdminDash();}}
-function approveTalent(id){const t=getTalents();const i=t.findIndex(x=>x.id===id);if(i>=0){t[i].pendingApproval=false;t[i].verified=true;setTalents(t);}toast('Talent disetujui ✓','success');renderAdminDash();}
-function rejectTalent(id){const t=getTalents();const i=t.findIndex(x=>x.id===id);if(i>=0){t[i].pendingApproval=false;t[i].verified=false;setTalents(t);}toast('Talent ditolak','info');renderAdminDash();}
-function toggleVerify(id){const t=getTalents();const i=t.findIndex(x=>x.id===id);if(i>=0){t[i].verified=!t[i].verified;setTalents(t);}toast('Verifikasi diperbarui!','info');renderAdminTalents(document.getElementById('admin-tab-talents'));}
-function deleteTalent(id){if(!confirm('Hapus talent ini?'))return;setTalents(getTalents().filter(t=>t.id!==id));toast('Talent dihapus','info');renderAdminTalents(document.getElementById('admin-tab-talents'));}
+function resetData() {
+  if (!confirm('Reset semua data di Firebase?\nTidak bisa dibatalkan.')) return;
+  db.ref('talents').remove();
+  db.ref('orders').remove();
+  db.ref('pricelist').remove();
+  db.ref('testimonials').remove();
+  db.ref('customPhotos').remove();
+  _talentsCache = null; _ordersCache = null; _priceCache = null; _testiCache = null; _photosCache = {};
+  toast('Data Firebase direset!','info');
+  renderAdminDash();
+}
 
-// ── TALENT DASHBOARD ──
-function renderTalentDash(){
+function approveTalent(id) {
+  updateTalent(id, {pendingApproval:false, verified:true});
+  // Juga update talentApplications
+  db.ref('talentApplications/' + id + '/status').set('Disetujui').catch(()=>{});
+  toast('Talent disetujui ✓','success');
+  renderAdminDash();
+}
+
+function rejectTalent(id) {
+  updateTalent(id, {pendingApproval:false, verified:false});
+  db.ref('talentApplications/' + id + '/status').set('Ditolak').catch(()=>{});
+  toast('Talent ditolak','info');
+  renderAdminDash();
+}
+
+function toggleVerify(id) {
+  const t = getTalents().find(x=>x.id===id);
+  if (t) updateTalent(id, {verified:!t.verified});
+  toast('Verifikasi diperbarui!','info');
+  renderAdminTalents(document.getElementById('admin-tab-talents'));
+}
+
+function deleteTalent(id) {
+  if (!confirm('Hapus talent ini dari database?')) return;
+  const talents = getTalents().filter(t=>t.id!==id);
+  setTalents(talents);
+  db.ref('talents/'+id).remove().catch(()=>{});
+  toast('Talent dihapus','info');
+  renderAdminTalents(document.getElementById('admin-tab-talents'));
+}
+
+// ══════════════════════════════════════════════════════
+//  TALENT DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderTalentDash() {
   showTalentTab('overview');
-  // Update topbar user name
   const tId = currentUser ? currentUser.talentId : null;
-  const t = tId ? getTalents().find(x => x.id === tId) : null;
-  const el = document.getElementById('talentTopbarUser');
-  if (el && t) el.textContent = (t.avatar || '✨') + ' ' + (t.nickname || t.name);
-}
-function showTalentTab(tab){
-  // Close drawer on mobile
-  closeDashSidebar('talent');
-  // Hide all tabs
-  document.querySelectorAll('.talent-tab').forEach(t=>t.classList.remove('active'));
-  const el=document.getElementById('talent-tab-'+tab);if(el)el.classList.add('active');
-  // Update active link
-  document.querySelectorAll('#talentSidebar .db-link').forEach(l=>{
-    const onclick=l.getAttribute('onclick')||'';
-    l.classList.toggle('active', onclick.includes("'"+tab+"'"));
-  });
-  const tId=currentUser?currentUser.talentId:null;
-  const t=tId?getTalents().find(x=>x.id===tId):getTalents()[0];
-  const c=document.getElementById('talent-tab-'+tab);if(!c)return;
-  if(tab==='overview')renderTalentOverview(c,t);
-  else if(tab==='orders')renderTalentOrders(c,t);
-  else if(tab==='profile')renderTalentProfile(c,t);
-  else if(tab==='earnings')renderTalentEarnings(c,t);
-  // Scroll content to top
-  const content=document.getElementById('talentContent');
-  if(content)content.scrollTop=0;
+  const t   = tId ? getTalents().find(x=>x.id===tId) : null;
+  const el  = document.getElementById('talentTopbarUser');
+  if (el && t) el.textContent = (t.avatar||'✨') + ' ' + (t.nickname||t.name);
 }
 
-function renderTalentOverview(el,t){
-  if(!t){el.innerHTML='<p style="padding:2rem;color:var(--text-muted)">Data tidak ditemukan</p>';return;}
-  const myOrders=getOrders().filter(o=>o.talent===t.name);
-  const photoUrl=getTalentPhotoUrl(t.id);
-  const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-  el.innerHTML=`
+function showTalentTab(tab) {
+  closeDashSidebar('talent');
+  document.querySelectorAll('.talent-tab').forEach(t=>t.classList.remove('active'));
+  const el = document.getElementById('talent-tab-'+tab); if (el) el.classList.add('active');
+  document.querySelectorAll('#talentSidebar .db-link').forEach(l=>{
+    const oc=l.getAttribute('onclick')||'';
+    l.classList.toggle('active', oc.includes("'"+tab+"'"));
+  });
+  const tId = currentUser ? currentUser.talentId : null;
+  const t   = tId ? getTalents().find(x=>x.id===tId) : getTalents()[0];
+  const c   = document.getElementById('talent-tab-'+tab); if (!c) return;
+  if (tab==='overview')  renderTalentOverview(c,t);
+  else if (tab==='orders')   renderTalentOrders(c,t);
+  else if (tab==='profile')  renderTalentProfile(c,t);
+  else if (tab==='earnings') renderTalentEarnings(c,t);
+  const content = document.getElementById('talentContent');
+  if (content) content.scrollTop = 0;
+}
+
+function renderTalentOverview(el,t) {
+  if (!t) { el.innerHTML='<p style="padding:2rem;color:var(--text-muted)">Data tidak ditemukan</p>'; return; }
+  const myOrders = getOrders().filter(o=>o.talent===t.name);
+  const photoUrl = getTalentPhotoUrl(t.id);
+  const grad = TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
+  el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
       <div><h2 style="font-family:var(--font-display)">Halo, ${t.nickname||t.name}! ${t.avatar}</h2><p style="color:var(--text-muted);font-size:.83rem">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'})}</p></div>
       <button class="btn-sm ${t.status==='online'?'':'btn-primary'}" onclick="toggleTalentStatus('${t.id}')" style="${t.status==='online'?'border-color:#48bb78;color:#48bb78':''}">${t.status==='online'?'🟢 Online — klik Offline':'⚫ Offline — klik Online'}</button>
@@ -1038,46 +1264,46 @@ function renderTalentOverview(el,t){
     <div class="dash-section"><h3>📅 Booking Terbaru</h3>${myOrders.length?`<div class="table-scroll">${ordersTable(myOrders.slice(0,5))}</div>`:'<div style="text-align:center;padding:2rem;color:var(--text-muted)"><div style="font-size:2rem">📭</div><p>Belum ada booking</p></div>'}</div>`;
 }
 
-function toggleTalentStatus(id){
-  const talents=getTalents();const i=talents.findIndex(x=>x.id===id);
-  if(i>=0){talents[i].status=talents[i].status==='online'?'offline':'online';setTalents(talents);toast(`Status: ${talents[i].status}`,'info');}
+function toggleTalentStatus(id) {
+  const t = getTalents().find(x=>x.id===id); if (!t) return;
+  const newStatus = t.status==='online' ? 'offline' : 'online';
+  updateTalent(id, {status: newStatus});
+  toast(`Status: ${newStatus}`,'info');
   renderTalentDash();
 }
 
-function renderTalentOrders(el,t){
-  if(!t){el.innerHTML='<p style="padding:2rem">Data tidak ditemukan</p>';return;}
-  const myOrders=getOrders().filter(o=>o.talent===t.name);
-  el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Daftar Booking 📅</h2><div class="dash-section">${myOrders.length?`<div class="table-scroll">${ordersTable(myOrders)}</div>`:'<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>Belum ada booking</p></div>'}</div>`;
+function renderTalentOrders(el,t) {
+  if (!t) { el.innerHTML='<p style="padding:2rem">Data tidak ditemukan</p>'; return; }
+  const myOrders = getOrders().filter(o=>o.talent===t.name);
+  el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Daftar Booking 📅</h2>
+    <div class="dash-section">${myOrders.length?`<div class="table-scroll">${ordersTable(myOrders)}</div>`:'<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>Belum ada booking</p></div>'}</div>`;
 }
 
-function renderTalentProfile(el,t){
-  if(!t){el.innerHTML='<p>Data tidak ditemukan</p>';return;}
-  const grad=TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
-  const photoUrl=getTalentPhotoUrl(t.id);
-  const gallery=getTalentGallery(t.id);
+// ── PROFILE & FOTO ──
+function renderTalentProfile(el, t) {
+  if (!t) { el.innerHTML='<p>Data tidak ditemukan</p>'; return; }
+  const grad = TALENT_GRADIENTS[t.id]||['#fce4ed','#e8a4c0'];
+  const photoUrl = getTalentPhotoUrl(t.id);
+  const gallery  = getTalentGallery(t.id);
 
-  // Buat slot foto helper
-  const photoSlot=(url,slotType,slotIdx)=>{
-    const isMain=slotType==='main';
-    const label=isMain?'Foto Profil (Utama)':('Galeri Foto '+(slotIdx+1));
-    const idSuffix=isMain?'main':('gal'+slotIdx);
+  const photoSlot = (url, slotType, slotIdx) => {
+    const isMain   = slotType==='main';
+    const label    = isMain ? 'Foto Profil (Utama)' : ('Galeri Foto '+(slotIdx+1));
+    const idSuffix = isMain ? 'main' : ('gal'+slotIdx);
     return `
     <div class="photo-slot" id="slot-${idSuffix}-${t.id}">
       <div class="photo-slot-label">${isMain?'🖼️':'📸'} ${label}</div>
       <div class="photo-slot-preview" id="preview-${idSuffix}-${t.id}">
         ${url
-          ?`<img src="${url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>${t.avatar}</div>'">
-             <button class="photo-slot-del" onclick="deleteSlotPhoto('${t.id}','${slotType}',${isMain?-1:slotIdx})" title="Hapus foto">
-               <i class='fas fa-trash'></i>
-             </button>`
-          :`<div class="photo-slot-empty">${isMain?t.avatar:'+'}</div>`
+          ? `<img src="${url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>${t.avatar}</div>'">
+             <button class="photo-slot-del" onclick="deleteSlotPhoto('${t.id}','${slotType}',${isMain?-1:slotIdx})" title="Hapus foto"><i class='fas fa-trash'></i></button>`
+          : `<div class="photo-slot-empty">${isMain?t.avatar:'+'}</div>`
         }
       </div>
       <div class="photo-slot-actions">
         <label class="photo-upload-btn" title="Upload file PNG/JPG">
           <i class="fas fa-upload"></i> Upload File
-          <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp"
-            style="display:none"
+          <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none"
             onchange="handlePhotoFileUpload(event,'${t.id}','${slotType}',${isMain?-1:slotIdx})">
         </label>
         <button class="photo-link-btn" onclick="showDriveLinkInput('${t.id}','${slotType}',${isMain?-1:slotIdx})">
@@ -1085,37 +1311,26 @@ function renderTalentProfile(el,t){
         </button>
       </div>
       <div class="photo-drive-input" id="drive-input-${idSuffix}-${t.id}" style="display:none">
-        <input type="text" id="drive-url-${idSuffix}-${t.id}"
-          placeholder="Paste link Google Drive atau File ID..."
+        <input type="text" id="drive-url-${idSuffix}-${t.id}" placeholder="Paste link Google Drive atau File ID..."
           style="width:100%;padding:.55rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.82rem">
         <div style="display:flex;gap:.5rem;margin-top:.5rem">
-          <button class="btn-sm" style="flex:1;justify-content:center"
-            onclick="applyDriveLink('${t.id}','${slotType}',${isMain?-1:slotIdx})">
-            <i class="fas fa-check"></i> Terapkan
-          </button>
-          <button class="btn-sm" style="flex:1;justify-content:center"
-            onclick="document.getElementById('drive-input-${idSuffix}-${t.id}').style.display='none'">
-            Batal
-          </button>
+          <button class="btn-sm" style="flex:1;justify-content:center" onclick="applyDriveLink('${t.id}','${slotType}',${isMain?-1:slotIdx})"><i class="fas fa-check"></i> Terapkan</button>
+          <button class="btn-sm" style="flex:1;justify-content:center" onclick="document.getElementById('drive-input-${idSuffix}-${t.id}').style.display='none'">Batal</button>
         </div>
       </div>
     </div>`;
   };
 
-  el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Edit Profil ✏️</h2>
-
-    <!-- ─── FOTO MANAGEMENT ─── -->
+  el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Edit Profil ✏️</h2>
     <div class="dash-section" style="margin-bottom:1.5rem">
       <h3 style="font-size:1rem;margin-bottom:.5rem">📸 Kelola Foto</h3>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem">Upload PNG/JPG dari perangkat atau tempel link Google Drive. 1 foto profil + 2 foto galeri publik.</p>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem">Upload PNG/JPG dari perangkat atau tempel link Google Drive. Foto tersimpan langsung ke Firebase Storage. 1 foto profil + 2 foto galeri.</p>
       <div class="photo-slots-grid">
         ${photoSlot(photoUrl,'main',-1)}
         ${photoSlot(gallery[0],'gallery',0)}
         ${photoSlot(gallery[1],'gallery',1)}
       </div>
     </div>
-
-    <!-- ─── INFO & KREDENSIAL ─── -->
     <div class="admin-2col-grid">
       <div class="dash-section">
         <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--pink-light),var(--purple-light));border-radius:var(--radius);margin-bottom:1.25rem">
@@ -1132,7 +1347,6 @@ function renderTalentProfile(el,t){
           <div style="margin-bottom:.4rem">Username: <strong>${t.username}</strong></div>
           <div>Password: <strong>${t.password}</strong></div>
         </div>
-        <p style="font-size:.73rem;color:var(--text-muted);margin-top:.4rem">⚠️ Simpan data login dengan aman</p>
       </div>
       <div class="dash-section">
         <h3 style="font-size:.95rem;margin-bottom:1rem">📝 Edit Info</h3>
@@ -1149,101 +1363,118 @@ function renderTalentProfile(el,t){
           <input type="text" id="editTiktok" value="${t.tiktok||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
         </div>
         <button class="btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center" onclick="saveTalentProfile('${t.id}')">
-          <i class="fas fa-save"></i> Simpan Perubahan
+          <i class="fas fa-save"></i> Simpan ke Firebase
         </button>
       </div>
     </div>`;
 }
 
-// ── PHOTO SLOT HELPERS ──
-function showDriveLinkInput(talentId,slotType,slotIdx){
-  const suffix=slotType==='main'?'main':('gal'+slotIdx);
-  const el=document.getElementById(`drive-input-${suffix}-${talentId}`);
-  if(el){el.style.display=el.style.display==='none'?'block':'none';}
+// ── PHOTO HELPERS ──
+function showDriveLinkInput(talentId, slotType, slotIdx) {
+  const suffix = slotType==='main'?'main':('gal'+slotIdx);
+  const el = document.getElementById(`drive-input-${suffix}-${talentId}`);
+  if (el) el.style.display = el.style.display==='none' ? 'block' : 'none';
 }
 
-function handlePhotoFileUpload(event,talentId,slotType,slotIdx){
-  const file=event.target.files[0];if(!file)return;
-  if(!file.type.match(/image\/(png|jpeg|jpg|webp)/)){toast('Format tidak didukung! Gunakan PNG/JPG/WEBP','error');return;}
-  if(file.size>5*1024*1024){toast('Ukuran file max 5MB!','error');return;}
-  const reader=new FileReader();
-  reader.onload=(e)=>{
-    const dataUrl=e.target.result;
-    applyPhotoToSlot(talentId,slotType,slotIdx,dataUrl);
-    toast('📸 Foto berhasil diupload!','success');
-  };
-  reader.onerror=()=>toast('Gagal membaca file!','error');
-  reader.readAsDataURL(file);
-}
+async function handlePhotoFileUpload(event, talentId, slotType, slotIdx) {
+  const file = event.target.files[0]; if (!file) return;
+  if (!file.type.match(/image\/(png|jpeg|jpg|webp)/)) { toast('Format tidak didukung! Gunakan PNG/JPG/WEBP','error'); return; }
+  if (file.size > 5*1024*1024) { toast('Ukuran file max 5MB!','error'); return; }
 
-function applyDriveLink(talentId,slotType,slotIdx){
-  const suffix=slotType==='main'?'main':('gal'+slotIdx);
-  const inputEl=document.getElementById(`drive-url-${suffix}-${talentId}`);
-  if(!inputEl||!inputEl.value.trim()){toast('Masukkan link Google Drive!','error');return;}
-  const url=driveUrlFromInput(inputEl.value.trim());
-  if(!url){toast('Link tidak valid! Pastikan link Google Drive benar.','error');return;}
-  applyPhotoToSlot(talentId,slotType,slotIdx,url);
-  const driveInput=document.getElementById(`drive-input-${suffix}-${talentId}`);
-  if(driveInput)driveInput.style.display='none';
-  toast('🔗 Foto Google Drive diterapkan!','success');
-}
+  // Coba upload ke Firebase Storage dulu
+  const storageUrl = await uploadPhotoToStorage(file, talentId, slotType, slotIdx);
 
-function applyPhotoToSlot(talentId,slotType,slotIdx,url){
-  const data=getCustomPhotoData(talentId);
-  if(slotType==='main'){
-    data.main=url;
+  if (storageUrl) {
+    // Berhasil upload ke Firebase Storage
+    applyPhotoToSlot(talentId, slotType, slotIdx, storageUrl);
+    toast('📸 Foto berhasil diupload ke Firebase!','success');
   } else {
-    if(!data.gallery)data.gallery=[null,null];
-    data.gallery[slotIdx]=url;
+    // Fallback ke base64 jika Storage gagal
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      applyPhotoToSlot(talentId, slotType, slotIdx, e.target.result);
+      toast('📸 Foto tersimpan (lokal)','success');
+    };
+    reader.onerror = () => toast('Gagal membaca file!','error');
+    reader.readAsDataURL(file);
   }
-  saveCustomPhotoData(talentId,data);
+}
+
+function applyDriveLink(talentId, slotType, slotIdx) {
+  const suffix  = slotType==='main'?'main':('gal'+slotIdx);
+  const inputEl = document.getElementById(`drive-url-${suffix}-${talentId}`);
+  if (!inputEl||!inputEl.value.trim()) { toast('Masukkan link Google Drive!','error'); return; }
+  const url = driveUrlFromInput(inputEl.value.trim());
+  if (!url) { toast('Link tidak valid! Pastikan link Google Drive benar.','error'); return; }
+  applyPhotoToSlot(talentId, slotType, slotIdx, url);
+  const driveInput = document.getElementById(`drive-input-${suffix}-${talentId}`);
+  if (driveInput) driveInput.style.display='none';
+  toast('🔗 Foto Google Drive diterapkan & disimpan ke Firebase!','success');
+}
+
+function applyPhotoToSlot(talentId, slotType, slotIdx, url) {
+  const data = getCustomPhotoData(talentId);
+  if (slotType==='main') {
+    data.main = url;
+  } else {
+    if (!data.gallery) data.gallery=[null,null];
+    data.gallery[slotIdx] = url;
+  }
+  // Simpan ke Firebase DB
+  saveCustomPhotoData(talentId, data);
+
   // Refresh preview
-  const suffix=slotType==='main'?'main':('gal'+slotIdx);
-  const previewEl=document.getElementById(`preview-${suffix}-${talentId}`);
-  if(previewEl){
-    previewEl.innerHTML=`<img src="${url}" alt="Foto" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>❌</div>'">
-      <button class="photo-slot-del" onclick="deleteSlotPhoto('${talentId}','${slotType}',${slotIdx})" title="Hapus foto">
-        <i class='fas fa-trash'></i>
-      </button>`;
+  const suffix    = slotType==='main'?'main':('gal'+slotIdx);
+  const previewEl = document.getElementById(`preview-${suffix}-${talentId}`);
+  if (previewEl) {
+    previewEl.innerHTML = `<img src="${url}" alt="Foto" onerror="this.parentElement.innerHTML='<div class=photo-slot-empty>❌</div>'">
+      <button class="photo-slot-del" onclick="deleteSlotPhoto('${talentId}','${slotType}',${slotIdx})" title="Hapus foto"><i class='fas fa-trash'></i></button>`;
   }
-  // Also refresh all talent displays using this photo
   refreshTalentPhotoDisplay(talentId);
 }
 
-function deleteSlotPhoto(talentId,slotType,slotIdx){
-  if(!confirm('Hapus foto ini?'))return;
-  const data=getCustomPhotoData(talentId);
-  if(slotType==='main'){data.main=null;}
-  else{if(data.gallery)data.gallery[slotIdx]=null;}
-  saveCustomPhotoData(talentId,data);
-  const suffix=slotType==='main'?'main':('gal'+slotIdx);
-  const previewEl=document.getElementById(`preview-${suffix}-${talentId}`);
-  const t=getTalents().find(x=>x.id===talentId);
-  if(previewEl)previewEl.innerHTML=`<div class="photo-slot-empty">${slotType==='main'?(t?t.avatar:'✨'):'+'}</div>`;
+function deleteSlotPhoto(talentId, slotType, slotIdx) {
+  if (!confirm('Hapus foto ini?')) return;
+  const data = getCustomPhotoData(talentId);
+  if (slotType==='main') { data.main=null; }
+  else { if (data.gallery) data.gallery[slotIdx]=null; }
+  saveCustomPhotoData(talentId, data);
+  const suffix    = slotType==='main'?'main':('gal'+slotIdx);
+  const previewEl = document.getElementById(`preview-${suffix}-${talentId}`);
+  const t = getTalents().find(x=>x.id===talentId);
+  if (previewEl) previewEl.innerHTML=`<div class="photo-slot-empty">${slotType==='main'?(t?t.avatar:'✨'):'+'}</div>`;
   refreshTalentPhotoDisplay(talentId);
-  toast('Foto dihapus','info');
+  toast('Foto dihapus dari Firebase','info');
 }
 
-function refreshTalentPhotoDisplay(talentId){
-  // Refresh overview photo if visible
-  const overviewEl=document.getElementById('talent-tab-overview');
-  if(overviewEl&&overviewEl.classList.contains('active')){
-    const t=getTalents().find(x=>x.id===talentId);
-    if(t)renderTalentOverview(overviewEl,t);
+function refreshTalentPhotoDisplay(talentId) {
+  const overviewEl = document.getElementById('talent-tab-overview');
+  if (overviewEl && overviewEl.classList.contains('active')) {
+    const t = getTalents().find(x=>x.id===talentId);
+    if (t) renderTalentOverview(overviewEl, t);
   }
 }
 
-function saveTalentProfile(id){
-  const t=getTalents();const i=t.findIndex(x=>x.id===id);
-  if(i>=0){const b=document.getElementById('editBio');const h=document.getElementById('editHobi');const ig=document.getElementById('editIg');const tk=document.getElementById('editTiktok');if(b)t[i].bio=b.value;if(h)t[i].hobbies=h.value;if(ig)t[i].ig=ig.value;if(tk)t[i].tiktok=tk.value;setTalents(t);}
-  toast('Profil tersimpan! ✓','success');
+function saveTalentProfile(id) {
+  const b  = document.getElementById('editBio');
+  const h  = document.getElementById('editHobi');
+  const ig = document.getElementById('editIg');
+  const tk = document.getElementById('editTiktok');
+  const updates = {};
+  if (b)  updates.bio     = b.value;
+  if (h)  updates.hobbies = h.value;
+  if (ig) updates.ig      = ig.value;
+  if (tk) updates.tiktok  = tk.value;
+  updateTalent(id, updates);
+  toast('Profil tersimpan ke Firebase! ✓','success');
 }
 
-function renderTalentEarnings(el,t){
-  if(!t){el.innerHTML='<p>Data tidak ditemukan</p>';return;}
-  const done=getOrders().filter(o=>o.talent===t.name&&o.status==='Selesai');
-  let total=0;done.forEach(o=>{const raw=(o.total||'').replace(/\./g,'').replace(/[^0-9]/g,'');total+=parseInt(raw||0,10);});
-  el.innerHTML=`<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pendapatan 💰</h2>
+function renderTalentEarnings(el, t) {
+  if (!t) { el.innerHTML='<p>Data tidak ditemukan</p>'; return; }
+  const done = getOrders().filter(o=>o.talent===t.name&&o.status==='Selesai');
+  let total = 0;
+  done.forEach(o => { const raw=(o.total||'').replace(/\./g,'').replace(/[^0-9]/g,''); total+=parseInt(raw||0,10); });
+  el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pendapatan 💰</h2>
     <div class="dash-grid-4">
       <div class="dash-stat-card" style="background:linear-gradient(135deg,var(--pink-light),var(--purple-light));border:none"><div class="dsc-icon">💵</div><div class="dsc-val" style="font-size:1.2rem">Rp ${total.toLocaleString('id-ID')}</div><div class="dsc-label">Total Pendapatan</div></div>
       <div class="dash-stat-card"><div class="dsc-icon">📊</div><div class="dsc-val">${done.length}</div><div class="dsc-label">Order Selesai</div></div>
@@ -1254,90 +1485,71 @@ function renderTalentEarnings(el,t){
 }
 
 // ── MODALS ──
-function openModal(id){const el=document.getElementById(id);if(el)el.classList.add('open');}
-function closeModal(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
-function showNotifModal(msg,icon='🎉'){
-  const c=document.getElementById('notifContent');
-  if(c)c.innerHTML=`<div style="text-align:center;padding:1rem"><div style="font-size:3.5rem;margin-bottom:1rem">${icon}</div><p style="font-size:.9rem;line-height:1.7;color:var(--text-sec)">${msg}</p><div style="margin-top:1.25rem;padding:.85rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.8rem;color:var(--pink-deep);display:flex;align-items:center;gap:.5rem;justify-content:center"><i class="fab fa-whatsapp"></i> Konfirmasi dikirim via WhatsApp dalam 5–15 menit</div></div>`;
+function openModal(id)  { const el=document.getElementById(id); if(el)el.classList.add('open'); }
+function closeModal(id) { const el=document.getElementById(id); if(el)el.classList.remove('open'); }
+
+function showNotifModal(msg, icon='🎉') {
+  const c = document.getElementById('notifContent');
+  if (c) c.innerHTML = `<div style="text-align:center;padding:1rem"><div style="font-size:3.5rem;margin-bottom:1rem">${icon}</div><p style="font-size:.9rem;line-height:1.7;color:var(--text-sec)">${msg}</p><div style="margin-top:1.25rem;padding:.85rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.8rem;color:var(--pink-deep);display:flex;align-items:center;gap:.5rem;justify-content:center"><i class="fab fa-whatsapp"></i> Konfirmasi dikirim via WhatsApp dalam 5–15 menit</div></div>`;
   openModal('notifModal');
 }
 
-function toast(msg,type='info'){
-  const c=document.getElementById('toastContainer');if(!c)return;
-  // Batasi max 3 toast sekaligus
-  while(c.children.length>=3)c.removeChild(c.firstChild);
-  const el=document.createElement('div');el.className='toast '+type;
-  const icons={success:'✅',error:'❌',info:'ℹ️'};
-  el.innerHTML=`<span style="flex-shrink:0">${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><span onclick="this.parentElement.remove()" style="flex-shrink:0;cursor:pointer;opacity:.6;padding:.1rem .2rem;font-size:.85rem">✕</span>`;
+function toast(msg, type='info') {
+  const c = document.getElementById('toastContainer'); if (!c) return;
+  while (c.children.length >= 3) c.removeChild(c.firstChild);
+  const el = document.createElement('div'); el.className='toast '+type;
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  el.innerHTML = `<span style="flex-shrink:0">${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><span onclick="this.parentElement.remove()" style="flex-shrink:0;cursor:pointer;opacity:.6;padding:.1rem .2rem;font-size:.85rem">✕</span>`;
   c.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(10px)';el.style.transition='all .35s';setTimeout(()=>el.remove(),350);},3000);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateY(10px)'; el.style.transition='all .35s'; setTimeout(()=>el.remove(),350); }, 3000);
 }
 
-/* =========================================
-   MUSIC SYSTEM
-========================================= */
-
-const bgMusic = document.getElementById('bgMusic');
-
-function toggleMusic(){
-
+// ── MUSIC — FIX: accessed inside function, not at top level ──
+function toggleMusic() {
+  const bgMusic = document.getElementById('bgMusic');
+  if (!bgMusic) return;
   musicPlaying = !musicPlaying;
-
   const icon = document.getElementById('musicIcon');
   const btn  = document.getElementById('floatMusic');
-
-  if(musicPlaying){
-
-    // PLAY MUSIC
-    bgMusic.play();
-
-    // GANTI ICON
-    if(icon){
-      icon.className = 'fas fa-pause';
-    }
-
-    // ANIMASI BUTTON
-    if(btn){
-      btn.classList.add('playing');
-    }
-
+  if (musicPlaying) {
+    bgMusic.play().catch(()=>{}); // catch autoplay policy error
+    if (icon) icon.className='fas fa-pause';
+    if (btn)  btn.classList.add('playing');
     toast('🎵 Ambient music diputar...','info');
-
-  }else{
-
-    // STOP MUSIC
+  } else {
     bgMusic.pause();
-
-    // RESET ICON
-    if(icon){
-      icon.className = 'fas fa-music';
-    }
-
-    // HAPUS ANIMASI
-    if(btn){
-      btn.classList.remove('playing');
-    }
-
+    if (icon) icon.className='fas fa-music';
+    if (btn)  btn.classList.remove('playing');
     toast('🎵 Musik dimatikan','info');
   }
 }
 
-function schedulePopup(){
-  const msgs=[{icon:'🌸',title:'Ara online!',body:'Talent favoritmu siap menemanimu'},{icon:'🎉',title:'Booking masuk!',body:'Platform makin ramai, yuk pilih talent'},{icon:'💌',title:'Promo spesial!',body:'Diskon 20% untuk PDKT Package'},{icon:'🎮',title:'Kira siap Mabar!',body:'Pro gamer online sekarang'}];
+// ── POPUP NOTIF ──
+function schedulePopup() {
+  const msgs = [
+    {icon:'🌸',title:'Ara online!',body:'Talent favoritmu siap menemanimu'},
+    {icon:'🎉',title:'Booking masuk!',body:'Platform makin ramai, yuk pilih talent'},
+    {icon:'💌',title:'Promo spesial!',body:'Diskon 20% untuk PDKT Package'},
+    {icon:'🎮',title:'Kira siap Mabar!',body:'Pro gamer online sekarang'},
+  ];
   let i=0;
-  function next(){if(currentPage==='admin'||currentPage==='talent-dash'){setTimeout(next,15000);return;}const m=msgs[i++%msgs.length];showPopup(m.icon,m.title,m.body);setTimeout(next,18000+Math.random()*10000);}
-  setTimeout(next,10000);
+  function next() {
+    if (currentPage==='admin'||currentPage==='talent-dash') { setTimeout(next,15000); return; }
+    const m = msgs[i++%msgs.length];
+    showPopup(m.icon, m.title, m.body);
+    setTimeout(next, 18000+Math.random()*10000);
+  }
+  setTimeout(next, 10000);
 }
 
-function showPopup(icon,title,body){
-  // Jangan tampil popup jika ada modal yang terbuka
-  if(document.querySelector('.modal-overlay.open'))return;
-  let p=document.getElementById('globalPopup');
-  if(!p){
-    p=document.createElement('div');
-    p.id='globalPopup';
-    p.className='popup-notif';
-    p.innerHTML=`
+function showPopup(icon, title, body) {
+  if (document.querySelector('.modal-overlay.open')) return;
+  let p = document.getElementById('globalPopup');
+  if (!p) {
+    p = document.createElement('div');
+    p.id = 'globalPopup';
+    p.className = 'popup-notif';
+    p.innerHTML = `
       <div class="popup-notif-header">
         <div class="popup-notif-title">
           <span id="pnIcon"></span>
@@ -1348,12 +1560,11 @@ function showPopup(icon,title,body){
       <p id="pnBody"></p>`;
     document.body.appendChild(p);
   }
-  const pi=document.getElementById('pnIcon'),pt=document.getElementById('pnTitle'),pb=document.getElementById('pnBody');
-  if(pi)pi.textContent=icon+' ';
-  if(pt)pt.textContent=title;
-  if(pb)pb.textContent=body;
+  const pi=document.getElementById('pnIcon'), pt=document.getElementById('pnTitle'), pb=document.getElementById('pnBody');
+  if (pi) pi.textContent=icon+' ';
+  if (pt) pt.textContent=title;
+  if (pb) pb.textContent=body;
   p.classList.add('show');
-  // Auto hide setelah 5 detik
   clearTimeout(p._hideTimer);
-  p._hideTimer=setTimeout(()=>p.classList.remove('show'),5000);
+  p._hideTimer = setTimeout(() => p.classList.remove('show'), 5000);
 }
