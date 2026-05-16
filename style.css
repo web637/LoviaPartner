@@ -1730,3 +1730,344 @@ body.dashboard-active .dashboard-page.active {
   min-height: 100vh;
   overflow-x: hidden;
 }
+
+/* ══════════════════════════════════════════
+   BUGFIX v4.0 — Dashboard Mobile & PC Fixes
+   ══════════════════════════════════════════ */
+
+/* ── FIX 1: Dashboard page layout — pastikan flex row di desktop ── */
+#page-admin.dashboard-page.active,
+#page-talent-dash.dashboard-page.active {
+  display: flex !important;
+  flex-direction: row !important;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ── FIX 2: Sidebar desktop — tidak boleh ikut scroll halaman ── */
+@media (min-width: 901px) {
+  #page-admin.dashboard-page.active,
+  #page-talent-dash.dashboard-page.active {
+    flex-direction: row !important;
+    overflow: hidden;
+  }
+
+  #adminSidebar,
+  #talentSidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 252px;
+    min-width: 252px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transform: none !important;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+
+  /* db-main-wrap scroll container */
+  #page-admin .db-main-wrap,
+  #page-talent-dash .db-main-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* dashboard-content scrollable area */
+  #page-admin .dashboard-content,
+  #page-talent-dash .dashboard-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.75rem 2rem;
+    min-height: 0;
+  }
+
+  /* Topbar tidak scroll */
+  #page-admin .db-topbar,
+  #page-talent-dash .db-topbar {
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+}
+
+/* ── FIX 3: Mobile dashboard — full column, sidebar drawer ── */
+@media (max-width: 900px) {
+  #page-admin.dashboard-page.active,
+  #page-talent-dash.dashboard-page.active {
+    flex-direction: column !important;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  #page-admin .db-main-wrap,
+  #page-talent-dash .db-main-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  #page-admin .db-topbar,
+  #page-talent-dash .db-topbar {
+    flex-shrink: 0;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  #page-admin .dashboard-content,
+  #page-talent-dash .dashboard-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+    min-height: 0;
+    width: 100%;
+  }
+
+  /* Sidebar drawer di mobile */
+  #adminSidebar,
+  #talentSidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 275px;
+    max-width: 88vw;
+    height: 100vh;
+    z-index: 1100;
+    transform: translateX(-100%);
+    display: flex;
+    flex-direction: column;
+    transition: transform .32s cubic-bezier(0.4,0,0.2,1), box-shadow .32s ease;
+  }
+
+  #adminSidebar.open,
+  #talentSidebar.open {
+    transform: translateX(0);
+    box-shadow: 10px 0 40px rgba(0,0,0,.28);
+  }
+}
+
+/* ── FIX 4: Topbar di mobile — layout pas ── */
+@media (max-width: 480px) {
+  #page-admin .db-topbar,
+  #page-talent-dash .db-topbar {
+    padding: .5rem .75rem;
+    min-height: 50px;
+    gap: .5rem;
+  }
+
+  .db-topbar-title { font-size: .85rem; }
+  .db-topbar-user { display: none; }
+
+  #page-admin .dashboard-content,
+  #page-talent-dash .dashboard-content {
+    padding: .75rem;
+  }
+}
+
+/* ── FIX 5: Admin stat cards — 2 kolom di mobile ── */
+@media (max-width: 600px) {
+  .dash-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: .65rem;
+  }
+  .dash-stat-card { padding: .85rem; }
+  .dsc-val { font-size: 1.2rem; }
+  .dsc-icon { font-size: 1.2rem; }
+  .dsc-label { font-size: .65rem; }
+}
+
+/* ── FIX 6: Admin 2-col grid di mobile ── */
+@media (max-width: 600px) {
+  .admin-2col-grid {
+    grid-template-columns: 1fr !important;
+    gap: .85rem;
+  }
+}
+
+/* ── FIX 7: Table horizontal scroll di mobile — tahan overflow ── */
+@media (max-width: 900px) {
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+  }
+  .admin-table {
+    min-width: 460px;
+    font-size: .75rem;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: .5rem .6rem;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 480px) {
+  .admin-table { min-width: 400px; font-size: .7rem; }
+  .admin-table th,
+  .admin-table td { padding: .4rem .5rem; }
+}
+
+/* ── FIX 8: Dash section heading wrap di mobile ── */
+@media (max-width: 480px) {
+  .dash-section h3 {
+    font-size: .92rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .35rem;
+  }
+  .dash-section h3 .btn-sm {
+    font-size: .68rem;
+    padding: .3rem .65rem;
+  }
+}
+
+/* ── FIX 9: Photo slots grid fix ── */
+@media (max-width: 480px) {
+  .photo-slots-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (min-width: 481px) and (max-width: 900px) {
+  .photo-slots-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── FIX 10: Overlay z-index & pointer-events ── */
+#adminOverlay,
+#talentOverlay {
+  position: fixed !important;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,.52);
+  z-index: 1099;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: none;
+  pointer-events: none;
+  flex: none !important; /* jangan ikut flex layout */
+}
+#adminOverlay.open,
+#talentOverlay.open {
+  display: block;
+  pointer-events: auto;
+}
+
+/* ── FIX 11: Hero section HP ── */
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+  }
+  .hero-title { font-size: clamp(1.75rem, 6.5vw, 2.2rem); }
+  .hero-sub { font-size: .9rem; }
+  .hero-stats { gap: .85rem; flex-wrap: wrap; }
+  .hstat-num { font-size: 1.35rem; }
+  .hstat-label { font-size: .68rem; }
+}
+@media (max-width: 480px) {
+  .hero { padding: 1.75rem .85rem; }
+  .hero-badge { font-size: .72rem; padding: .35rem .75rem; }
+  .hero-actions { gap: .6rem; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-outline { font-size: .85rem; padding: .7rem 1.25rem; }
+}
+
+/* ── FIX 12: Navbar HP — topbar tidak tertumpuk konten ── */
+@media (max-width: 480px) {
+  .nav-container { padding: 0 .85rem; }
+  .btn-nav-login { padding: .45rem .85rem; font-size: .8rem; gap: .3rem; }
+  .nav-logo { font-size: 1.25rem; }
+}
+
+/* ── FIX 13: Service grid HP ── */
+@media (max-width: 480px) {
+  .services-grid { grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+  .service-card { padding: 1rem .65rem; }
+  .sc-icon { font-size: 1.5rem; margin-bottom: .35rem; }
+  .service-card h3 { font-size: .82rem; }
+  .service-card p { font-size: .7rem; display: none; }
+}
+@media (max-width: 360px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── FIX 14: Footer HP — text tidak overflow ── */
+@media (max-width: 480px) {
+  .footer-contact p { font-size: .78rem; word-break: break-all; }
+  .footer-bottom p { font-size: .75rem; }
+  .disclaimer { font-size: .72rem; padding: .75rem; }
+}
+
+/* ── FIX 15: Modal HP ── */
+@media (max-width: 480px) {
+  .modal-overlay { padding: .65rem; align-items: flex-end; }
+  .modal-box {
+    padding: 1.5rem 1rem;
+    border-radius: var(--radius) var(--radius) 0 0;
+    max-height: 85vh;
+    width: 100%;
+    max-width: 100%;
+  }
+  .booking-modal { max-width: 100%; }
+}
+
+/* ── FIX 16: db-nav labels & links tidak terpotong ── */
+.db-nav { overflow-y: auto; overflow-x: hidden; }
+.db-link { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── FIX 17: Earnings/stats layout di talent dash ── */
+@media (max-width: 600px) {
+  .earn-grid,
+  .talent-earn-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── FIX 18: Register form HP ── */
+@media (max-width: 640px) {
+  .step-indicator { gap: 0; }
+  .step:not(.step-line) { width: 36px; height: 36px; font-size: .8rem; }
+  .step:not(.step-line) span { font-size: .62rem; }
+  .form-grid { grid-template-columns: 1fr; gap: .75rem; }
+}
+
+/* ── FIX 19: Pricelist HP ── */
+@media (max-width: 480px) {
+  .price-items-grid { grid-template-columns: repeat(2, 1fr); gap: .65rem; }
+  .price-item-card { padding: .85rem .75rem; }
+  .price-item-label { font-size: .8rem; }
+  .price-item-price { font-size: 1.05rem; }
+  .package-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .price-items-grid { grid-template-columns: 1fr; }
+}
+
+/* ── FIX 20: Body overflow saat dashboard aktif ── */
+body.dashboard-active {
+  overflow: hidden;
+}
+body.dashboard-active #appContent {
+  overflow: hidden;
+}
+

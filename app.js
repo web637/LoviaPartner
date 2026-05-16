@@ -498,8 +498,12 @@ function showPage(p) {
   const pg = document.getElementById('page-'+p);
   if (pg) pg.classList.add('active');
 
-  // Scroll top
-  window.scrollTo({top:0, behavior:'smooth'});
+  // Scroll top — skip for dashboard (uses internal scroll)
+  if (!isDash) {
+    window.scrollTo({top:0, behavior:'smooth'});
+    // Also scroll dashboard content containers to top
+    document.querySelectorAll('.dashboard-content').forEach(el => { el.scrollTop = 0; });
+  }
 
   // Close mobile nav menu
   const nl = document.getElementById('navLinks');
@@ -512,10 +516,12 @@ function showPage(p) {
     if (navbar) navbar.style.display = 'none';
     if (footer) footer.style.display = 'none';
     document.body.classList.add('dashboard-active');
+    document.body.style.overflow = 'hidden';
   } else {
     if (navbar) navbar.style.display = '';
     if (footer) footer.style.display = '';
     document.body.classList.remove('dashboard-active');
+    document.body.style.overflow = '';
   }
 
   // Render page content
@@ -934,7 +940,7 @@ function openDashSidebar(type) {
   const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.add('open');
   if (overlay) overlay.classList.add('open');
-  // Prevent scroll only on mobile (desktop sidebar is always visible)
+  // Prevent background scroll when sidebar is open on mobile
   if (window.innerWidth <= 900) document.body.style.overflow = 'hidden';
 }
 
@@ -943,7 +949,9 @@ function closeDashSidebar(type) {
   const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
-  document.body.style.overflow = '';
+  // Only restore scroll if NOT on dashboard (dashboard body is always overflow:hidden)
+  const isDash = (currentPage === 'admin' || currentPage === 'talent-dash');
+  if (!isDash) document.body.style.overflow = '';
 }
 
 // ── AUTH ──
