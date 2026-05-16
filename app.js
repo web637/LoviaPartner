@@ -511,15 +511,70 @@ function initCounters() {
 function initTyping() {
   const el = document.querySelector('.hero-title em');
   if (!el) return;
-  const words = ['Partner','Teman','Sahabat','Teman Curhat'];
-  let wi = 0, ci = 0, deleting = false;
-  function type() {
-    const w = words[wi]; el.textContent = deleting ? w.slice(0,ci--) : w.slice(0,ci++);
-    if (!deleting && ci > w.length) { deleting = true; setTimeout(type, 1200); return; }
-    if (deleting && ci < 0)        { deleting = false; wi = (wi+1)%words.length; setTimeout(type, 300); return; }
-    setTimeout(type, deleting ? 60 : 100);
+
+  const words = [
+    'Partner',
+    'Teman',
+    'Sahabat',
+    'Teman Curhat'
+  ];
+
+  let wordIndex = 0;
+  let charIndex = 0;
+  let isDeleting = false;
+
+  function typeEffect() {
+
+    const currentWord = words[wordIndex];
+
+    // typing
+    if (!isDeleting) {
+      el.textContent = currentWord.substring(0, charIndex + 1);
+      charIndex++;
+
+      // selesai mengetik
+      if (charIndex === currentWord.length) {
+
+        el.classList.add('typing-pause');
+
+        setTimeout(() => {
+          isDeleting = true;
+          el.classList.remove('typing-pause');
+          typeEffect();
+        }, 1800);
+
+        return;
+      }
+
+    } else {
+
+      // deleting lebih smooth
+      el.textContent = currentWord.substring(0, charIndex - 1);
+      charIndex--;
+
+      // selesai hapus
+      if (charIndex === 0) {
+        isDeleting = false;
+        wordIndex = (wordIndex + 1) % words.length;
+
+        // transisi antar kata
+        el.classList.add('typing-switch');
+
+        setTimeout(() => {
+          el.classList.remove('typing-switch');
+          typeEffect();
+        }, 250);
+
+        return;
+      }
+    }
+
+    const speed = isDeleting ? 45 : 90;
+
+    setTimeout(typeEffect, speed);
   }
-  type();
+
+  typeEffect();
 }
 
 // ── PAGE NAVIGATION ──
