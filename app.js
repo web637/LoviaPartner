@@ -182,22 +182,56 @@ function saveCustomPhotoData(talentId, data) {
   db.ref('customPhotos/' + talentId).set(data).catch(e => console.error('saveCustomPhotoData error:', e));
 }
 
-// ── PHOTO UPLOAD ke Firebase Storage ──
+// ── PHOTO UPLOAD — Google Drive (utama) + Base64 lokal (fallback) ──
+// Firebase Storage TIDAK digunakan — cukup simpan URL ke Realtime Database
+
 async function uploadPhotoToStorage(file, talentId, slotType, slotIdx) {
-  const ext = file.name.split('.').pop();
-  const path = `talent-photos/${talentId}/${slotType}${slotIdx >= 0 ? '_'+slotIdx : ''}.${ext}`;
-  const ref = storage.ref(path);
-  toast('Mengupload foto...', 'info');
-  try {
-    const snap = await ref.put(file);
-    const url = await snap.ref.getDownloadURL();
-    return url;
-  } catch(e) {
-    console.error('Upload error:', e);
-    toast('Gagal upload ke server, simpan lokal saja', 'error');
-    // Fallback ke base64 local
-    return null;
-  }
+  // Firebase Storage dinonaktifkan — langsung return null agar fallback ke base64
+  return null;
+}
+
+// ── CONVERT FILE KE BASE64 & SIMPAN KE FIREBASE DB ──
+async function uploadPhotoBase64(file, talentId, slotType, slotIdx) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      // Cek ukuran base64 — Firebase DB max 10MB per node
+      if (base64.length > 800000) {
+        // Compress jika terlalu besar
+        compressAndSave(file, talentId, slotType, slotIdx, resolve);
+      } else {
+        applyPhotoToSlot(talentId, slotType, slotIdx, base64);
+        toast('📸 Foto tersimpan ke database!', 'success');
+        resolve(base64);
+      }
+    };
+    reader.onerror = () => reject(new Error('Gagal membaca file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function compressAndSave(file, talentId, slotType, slotIdx, resolve) {
+  const canvas = document.createElement('canvas');
+  const ctx    = canvas.getContext('2d');
+  const img    = new Image();
+  const url    = URL.createObjectURL(file);
+  img.onload = () => {
+    // Resize max 800px
+    const MAX = 800;
+    let w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    canvas.width = w; canvas.height = h;
+    ctx.drawImage(img, 0, 0, w, h);
+    const compressed = canvas.toDataURL('image/jpeg', 0.75);
+    URL.revokeObjectURL(url);
+    applyPhotoToSlot(talentId, slotType, slotIdx, compressed);
+    toast('📸 Foto dikompres & tersimpan!', 'success');
+    if (resolve) resolve(compressed);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('Gagal memproses foto','error'); };
+  img.src = url;
 }
 
 // ══════════════════════════════════════════════════════
@@ -498,12 +532,8 @@ function showPage(p) {
   const pg = document.getElementById('page-'+p);
   if (pg) pg.classList.add('active');
 
-  // Scroll top — skip for dashboard (uses internal scroll)
-  if (!isDash) {
-    window.scrollTo({top:0, behavior:'smooth'});
-    // Also scroll dashboard content containers to top
-    document.querySelectorAll('.dashboard-content').forEach(el => { el.scrollTop = 0; });
-  }
+  // Scroll top
+  window.scrollTo({top:0, behavior:'smooth'});
 
   // Close mobile nav menu
   const nl = document.getElementById('navLinks');
@@ -516,12 +546,10 @@ function showPage(p) {
     if (navbar) navbar.style.display = 'none';
     if (footer) footer.style.display = 'none';
     document.body.classList.add('dashboard-active');
-    document.body.style.overflow = 'hidden';
   } else {
     if (navbar) navbar.style.display = '';
     if (footer) footer.style.display = '';
     document.body.classList.remove('dashboard-active');
-    document.body.style.overflow = '';
   }
 
   // Render page content
@@ -940,7 +968,7 @@ function openDashSidebar(type) {
   const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.add('open');
   if (overlay) overlay.classList.add('open');
-  // Prevent background scroll when sidebar is open on mobile
+  // Prevent scroll only on mobile (desktop sidebar is always visible)
   if (window.innerWidth <= 900) document.body.style.overflow = 'hidden';
 }
 
@@ -949,9 +977,7 @@ function closeDashSidebar(type) {
   const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
-  // Only restore scroll if NOT on dashboard (dashboard body is always overflow:hidden)
-  const isDash = (currentPage === 'admin' || currentPage === 'talent-dash');
-  if (!isDash) document.body.style.overflow = '';
+  document.body.style.overflow = '';
 }
 
 // ── AUTH ──
@@ -1007,19 +1033,32 @@ function renderAdminDash() { showAdminTab('overview'); }
 
 function showAdminTab(tab) {
   closeDashSidebar('admin');
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  const el = document.getElementById('admin-tab-'+tab); if (el) el.classList.add('active');
-  document.querySelectorAll('#adminSidebar .db-link').forEach(l => {
-    const oc = l.getAttribute('onclick')||'';
-    l.classList.toggle('active', oc.includes("'"+tab+"'"));
+
+  // Clear all tabs so they re-render fresh
+  document.querySelectorAll('.admin-tab').forEach(t => {
+    t.classList.remove('active');
+    t.innerHTML = '';
   });
-  const c = document.getElementById('admin-tab-'+tab); if (!c) return;
-  if (tab==='overview')     renderAdminOverview(c);
-  else if (tab==='talents') renderAdminTalents(c);
-  else if (tab==='orders')  renderAdminOrders(c);
-  else if (tab==='pricelist')     renderAdminPricelist(c);
-  else if (tab==='testimonials')  renderAdminTestimonials(c);
-  else if (tab==='settings')      renderAdminSettings(c);
+
+  const el = document.getElementById('admin-tab-' + tab);
+  if (el) el.classList.add('active');
+
+  // Update active link state
+  document.querySelectorAll('#adminSidebar .db-link').forEach(l => {
+    const oc = l.getAttribute('onclick') || '';
+    l.classList.toggle('active', oc.includes("'" + tab + "'"));
+  });
+
+  const c = document.getElementById('admin-tab-' + tab);
+  if (!c) return;
+
+  if      (tab === 'overview')      renderAdminOverview(c);
+  else if (tab === 'talents')       renderAdminTalents(c);
+  else if (tab === 'orders')        renderAdminOrders(c);
+  else if (tab === 'pricelist')     renderAdminPricelist(c);
+  else if (tab === 'testimonials')  renderAdminTestimonials(c);
+  else if (tab === 'settings')      renderAdminSettings(c);
+
   const content = document.getElementById('adminContent');
   if (content) content.scrollTop = 0;
 }
@@ -1239,32 +1278,55 @@ function deleteTalent(id) {
 //  TALENT DASHBOARD
 // ══════════════════════════════════════════════════════
 function renderTalentDash() {
-  showTalentTab('overview');
   const tId = currentUser ? currentUser.talentId : null;
-  const t   = tId ? getTalents().find(x=>x.id===tId) : null;
+  const t   = tId ? getTalents().find(x => x.id === tId) : null;
+
   // Update topbar user label
   const el = document.getElementById('talentTopbarUser');
-  if (el && t) el.textContent = (t.avatar||'✨') + ' ' + (t.nickname||t.name);
+  if (el && t) el.textContent = (t.avatar || '✨') + ' ' + (t.nickname || t.name);
+
   // Update sidebar avatar name
   const sn = document.getElementById('talentSidebarName');
   if (sn && t) sn.textContent = t.nickname || t.name;
+
+  // Always show overview tab fresh on dashboard load
+  showTalentTab('overview');
 }
 
 function showTalentTab(tab) {
+  // Close sidebar on mobile
   closeDashSidebar('talent');
-  document.querySelectorAll('.talent-tab').forEach(t=>t.classList.remove('active'));
-  const el = document.getElementById('talent-tab-'+tab); if (el) el.classList.add('active');
-  document.querySelectorAll('#talentSidebar .db-link').forEach(l=>{
-    const oc=l.getAttribute('onclick')||'';
-    l.classList.toggle('active', oc.includes("'"+tab+"'"));
+
+  // Deactivate all tabs
+  document.querySelectorAll('.talent-tab').forEach(t => {
+    t.classList.remove('active');
+    t.innerHTML = ''; // clear stale content so it always re-renders fresh
   });
+
+  // Activate target tab
+  const el = document.getElementById('talent-tab-' + tab);
+  if (el) el.classList.add('active');
+
+  // Update sidebar active link
+  document.querySelectorAll('#talentSidebar .db-link').forEach(l => {
+    const oc = l.getAttribute('onclick') || '';
+    l.classList.toggle('active', oc.includes("'" + tab + "'"));
+  });
+
+  // Get talent data fresh from cache
   const tId = currentUser ? currentUser.talentId : null;
-  const t   = tId ? getTalents().find(x=>x.id===tId) : getTalents()[0];
-  const c   = document.getElementById('talent-tab-'+tab); if (!c) return;
-  if (tab==='overview')  renderTalentOverview(c,t);
-  else if (tab==='orders')   renderTalentOrders(c,t);
-  else if (tab==='profile')  renderTalentProfile(c,t);
-  else if (tab==='earnings') renderTalentEarnings(c,t);
+  const t   = tId ? getTalents().find(x => x.id === tId) : getTalents()[0];
+
+  const c = document.getElementById('talent-tab-' + tab);
+  if (!c) return;
+
+  // Render the correct tab content
+  if      (tab === 'overview')  renderTalentOverview(c, t);
+  else if (tab === 'orders')    renderTalentOrders(c, t);
+  else if (tab === 'profile')   renderTalentProfile(c, t);
+  else if (tab === 'earnings')  renderTalentEarnings(c, t);
+
+  // Scroll content area to top
   const content = document.getElementById('talentContent');
   if (content) content.scrollTop = 0;
 }
@@ -1309,11 +1371,20 @@ function renderTalentOverview(el,t) {
 }
 
 function toggleTalentStatus(id) {
-  const t = getTalents().find(x=>x.id===id); if (!t) return;
-  const newStatus = t.status==='online' ? 'offline' : 'online';
-  updateTalent(id, {status: newStatus});
-  toast(`Status: ${newStatus}`,'info');
-  renderTalentDash();
+  const t = getTalents().find(x => x.id === id);
+  if (!t) return;
+  const newStatus = t.status === 'online' ? 'offline' : 'online';
+  updateTalent(id, { status: newStatus });
+  toast(`Status: ${newStatus === 'online' ? '🟢 Online' : '⚫ Offline'}`, 'info');
+  // Re-render overview tab only (no full reload)
+  const overviewEl = document.getElementById('talent-tab-overview');
+  if (overviewEl && overviewEl.classList.contains('active')) {
+    const fresh = getTalents().find(x => x.id === id) || t;
+    renderTalentOverview(overviewEl, { ...fresh, status: newStatus });
+  }
+  // Update topbar
+  const topbar = document.getElementById('talentTopbarUser');
+  if (topbar && t) topbar.textContent = (t.avatar || '✨') + ' ' + (t.nickname || t.name);
 }
 
 function renderTalentOrders(el,t) {
@@ -1368,7 +1439,7 @@ function renderTalentProfile(el, t) {
   el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Edit Profil ✏️</h2>
     <div class="dash-section" style="margin-bottom:1.5rem">
       <h3 style="font-size:1rem;margin-bottom:.5rem">📸 Kelola Foto</h3>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem">Upload PNG/JPG dari perangkat atau tempel link Google Drive. Foto tersimpan langsung ke Firebase Storage. 1 foto profil + 2 foto galeri.</p>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem">📌 <strong>2 cara simpan foto:</strong> (1) Upload file PNG/JPG dari HP/PC — dikompres otomatis & disimpan ke database. (2) Paste link Google Drive — pastikan file sudah di-share "Anyone with the link". 1 foto profil + 2 foto galeri.</p>
       <div class="photo-slots-grid">
         ${photoSlot(photoUrl,'main',-1)}
         ${photoSlot(gallery[0],'gallery',0)}
@@ -1421,27 +1492,21 @@ function showDriveLinkInput(talentId, slotType, slotIdx) {
 }
 
 async function handlePhotoFileUpload(event, talentId, slotType, slotIdx) {
-  const file = event.target.files[0]; if (!file) return;
-  if (!file.type.match(/image\/(png|jpeg|jpg|webp)/)) { toast('Format tidak didukung! Gunakan PNG/JPG/WEBP','error'); return; }
-  if (file.size > 5*1024*1024) { toast('Ukuran file max 5MB!','error'); return; }
-
-  // Coba upload ke Firebase Storage dulu
-  const storageUrl = await uploadPhotoToStorage(file, talentId, slotType, slotIdx);
-
-  if (storageUrl) {
-    // Berhasil upload ke Firebase Storage
-    applyPhotoToSlot(talentId, slotType, slotIdx, storageUrl);
-    toast('📸 Foto berhasil diupload ke Firebase!','success');
-  } else {
-    // Fallback ke base64 jika Storage gagal
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      applyPhotoToSlot(talentId, slotType, slotIdx, e.target.result);
-      toast('📸 Foto tersimpan (lokal)','success');
-    };
-    reader.onerror = () => toast('Gagal membaca file!','error');
-    reader.readAsDataURL(file);
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.match(/image\/(png|jpeg|jpg|webp)/)) {
+    toast('Format tidak didukung! Gunakan PNG/JPG/WEBP', 'error');
+    return;
   }
+  if (file.size > 8 * 1024 * 1024) {
+    toast('Ukuran file max 8MB!', 'error');
+    return;
+  }
+
+  toast('Memproses foto...', 'info');
+
+  // Langsung compress & simpan sebagai base64 ke Firebase Realtime DB
+  compressAndSave(file, talentId, slotType, slotIdx, null);
 }
 
 function applyDriveLink(talentId, slotType, slotIdx) {
@@ -1755,3 +1820,4 @@ function handleNotifCta(event, isExternal) {
   // External link — let browser open it
   closePremiumNotif();
 }
+
