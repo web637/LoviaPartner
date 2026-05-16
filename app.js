@@ -491,17 +491,42 @@ function initTyping() {
 // ── PAGE NAVIGATION ──
 function showPage(p) {
   currentPage = p;
+  const isDash = (p === 'admin' || p === 'talent-dash');
+
+  // Activate correct page
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   const pg = document.getElementById('page-'+p);
   if (pg) pg.classList.add('active');
+
+  // Scroll top
   window.scrollTo({top:0, behavior:'smooth'});
+
+  // Close mobile nav menu
+  const nl = document.getElementById('navLinks');
+  if (nl) nl.classList.remove('open');
+
+  // Hide/show navbar and footer for dashboard pages
+  const navbar = document.getElementById('navbar');
   const footer = document.getElementById('mainFooter');
-  if (footer) footer.style.display = (p==='admin'||p==='talent-dash') ? 'none' : '';
-  if (p==='landing')       renderHome();
-  if (p==='talents')       renderTalents();
-  if (p==='pricelist')     renderPricelist();
-  if (p==='admin')         renderAdminDash();
-  if (p==='talent-dash')   renderTalentDash();
+  if (isDash) {
+    if (navbar) navbar.style.display = 'none';
+    if (footer) footer.style.display = 'none';
+    document.body.classList.add('dashboard-active');
+  } else {
+    if (navbar) navbar.style.display = '';
+    if (footer) footer.style.display = '';
+    document.body.classList.remove('dashboard-active');
+  }
+
+  // Render page content
+  if (p === 'landing')       renderHome();
+  if (p === 'talents')       renderTalents();
+  if (p === 'pricelist')     renderPricelist();
+  if (p === 'admin')         renderAdminDash();
+  if (p === 'talent-dash')   renderTalentDash();
+
+  // Close any open premium notification
+  closePremiumNotif();
 }
 
 // ── RENDER HOME ──
@@ -909,7 +934,8 @@ function openDashSidebar(type) {
   const overlay  = document.getElementById(type==='admin'?'adminOverlay':'talentOverlay');
   if (sidebar) sidebar.classList.add('open');
   if (overlay) overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Prevent scroll only on mobile (desktop sidebar is always visible)
+  if (window.innerWidth <= 900) document.body.style.overflow = 'hidden';
 }
 
 function closeDashSidebar(type) {
@@ -956,6 +982,12 @@ function logout() {
   closeDashSidebar('admin');
   closeDashSidebar('talent');
   document.body.style.overflow = '';
+  document.body.classList.remove('dashboard-active');
+  // Re-show navbar and footer
+  const navbar = document.getElementById('navbar');
+  const footer = document.getElementById('mainFooter');
+  if (navbar) navbar.style.display = '';
+  if (footer) footer.style.display = '';
   toast('Berhasil logout! 👋','info');
   setTimeout(() => showPage('landing'), 300);
 }
@@ -1202,8 +1234,12 @@ function renderTalentDash() {
   showTalentTab('overview');
   const tId = currentUser ? currentUser.talentId : null;
   const t   = tId ? getTalents().find(x=>x.id===tId) : null;
-  const el  = document.getElementById('talentTopbarUser');
+  // Update topbar user label
+  const el = document.getElementById('talentTopbarUser');
   if (el && t) el.textContent = (t.avatar||'✨') + ' ' + (t.nickname||t.name);
+  // Update sidebar avatar name
+  const sn = document.getElementById('talentSidebarName');
+  if (sn && t) sn.textContent = t.nickname || t.name;
 }
 
 function showTalentTab(tab) {
@@ -1524,47 +1560,190 @@ function toggleMusic() {
   }
 }
 
-// ── POPUP NOTIF ──
+// ══════════════════════════════════════════════════════
+//  PREMIUM NOTIFICATION SYSTEM — setiap 20 detik
+//  Link target: https://benyoriki.com/
+// ══════════════════════════════════════════════════════
+
+const NOTIF_MESSAGES = [
+  {
+    emoji: '💻',
+    badge: '🔥 Website Developer',
+    title: 'Mau website sekeren ini?',
+    desc: 'Dibuat oleh developer terbaik — benyoriki.com! Klik dan wujudkan impianmu sekarang.',
+    cta: '✨ Kunjungi benyoriki.com',
+    ctaUrl: 'https://benyoriki.com/'
+  },
+  {
+    emoji: '🌸',
+    badge: '💕 Ara online!',
+    title: 'Talent favoritmu sedang online',
+    desc: 'Ara Salsabila & 7 talent lain siap menemanimu. Booking sekarang sebelum penuh!',
+    cta: '💌 Cari Talent Sekarang',
+    ctaUrl: null,
+    action: () => showPage('talents')
+  },
+  {
+    emoji: '🎨',
+    badge: '👨‍💻 Web Developer',
+    title: 'Website ini dibuat oleh @benyoriki',
+    desc: 'Butuh website profesional, modern & responsif? Percayakan pada ahlinya!',
+    cta: '🚀 Lihat Portfolio',
+    ctaUrl: 'https://benyoriki.com/'
+  },
+  {
+    emoji: '🎉',
+    badge: '📦 Promo Aktif!',
+    title: 'Diskon 20% PDKT Package!',
+    desc: 'Terbatas! Paket PDKT 2 sekarang lebih hemat. Jangan sampai kehabisan.',
+    cta: '🏷️ Lihat Harga',
+    ctaUrl: null,
+    action: () => showPage('pricelist')
+  },
+  {
+    emoji: '💡',
+    badge: '💻 Jasa Web Dev',
+    title: 'Butuh website untuk bisnis kamu?',
+    desc: '@benyoriki siap bantu wujudkan website impianmu — modern, cepat & menjual!',
+    cta: '🌐 benyoriki.com →',
+    ctaUrl: 'https://benyoriki.com/'
+  },
+  {
+    emoji: '⭐',
+    badge: '🏆 Top Talent',
+    title: 'Dira Cantika — Rating 5.0!',
+    desc: '312+ booking berhasil. Offline date terbaik di Surabaya, tersedia hari ini!',
+    cta: '📅 Booking Sekarang',
+    ctaUrl: null,
+    action: () => showPage('talents')
+  },
+  {
+    emoji: '🚀',
+    badge: '✨ Developer Pilihan',
+    title: 'Website ini adalah karya @benyoriki',
+    desc: 'UI premium, sistem real-time Firebase, & 100% responsive. Mau website seperti ini?',
+    cta: '💬 Hubungi Developer',
+    ctaUrl: 'https://benyoriki.com/'
+  },
+  {
+    emoji: '🎮',
+    badge: '🟢 Online Sekarang',
+    title: 'Kira Mahesa siap Mabar!',
+    desc: 'Pro gamer rating tertinggi, siap carry kamu ke rank impian. Slot terbatas!',
+    cta: '🎯 Mabar Sekarang',
+    ctaUrl: null,
+    action: () => showPage('talents')
+  },
+];
+
+let _notifIdx = 0;
+let _notifTimer = null;
+let _notifScheduled = false;
+
 function schedulePopup() {
-  const msgs = [
-    {icon:'🌸',title:'Ara online!',body:'Talent favoritmu siap menemanimu'},
-    {icon:'🎉',title:'Booking masuk!',body:'Platform makin ramai, yuk pilih talent'},
-    {icon:'💌',title:'Promo spesial!',body:'Diskon 20% untuk PDKT Package'},
-    {icon:'🎮',title:'Kira siap Mabar!',body:'Pro gamer online sekarang'},
-  ];
-  let i=0;
-  function next() {
-    if (currentPage==='admin'||currentPage==='talent-dash') { setTimeout(next,15000); return; }
-    const m = msgs[i++%msgs.length];
-    showPopup(m.icon, m.title, m.body);
-    setTimeout(next, 18000+Math.random()*10000);
-  }
-  setTimeout(next, 10000);
+  if (_notifScheduled) return;
+  _notifScheduled = true;
+  // Tampilkan pertama kali setelah 5 detik
+  setTimeout(() => _showNextNotif(), 5000);
 }
 
-function showPopup(icon, title, body) {
-  if (document.querySelector('.modal-overlay.open')) return;
-  let p = document.getElementById('globalPopup');
-  if (!p) {
-    p = document.createElement('div');
-    p.id = 'globalPopup';
-    p.className = 'popup-notif';
-    p.innerHTML = `
-      <div class="popup-notif-header">
-        <div class="popup-notif-title">
-          <span id="pnIcon"></span>
-          <span id="pnTitle"></span>
-        </div>
-        <button class="popup-notif-close" onclick="document.getElementById('globalPopup').classList.remove('show')" aria-label="Tutup">✕</button>
-      </div>
-      <p id="pnBody"></p>`;
-    document.body.appendChild(p);
+function _showNextNotif() {
+  if (currentPage === 'admin' || currentPage === 'talent-dash') {
+    _notifTimer = setTimeout(_showNextNotif, 20000);
+    return;
   }
-  const pi=document.getElementById('pnIcon'), pt=document.getElementById('pnTitle'), pb=document.getElementById('pnBody');
-  if (pi) pi.textContent=icon+' ';
-  if (pt) pt.textContent=title;
-  if (pb) pb.textContent=body;
-  p.classList.add('show');
-  clearTimeout(p._hideTimer);
-  p._hideTimer = setTimeout(() => p.classList.remove('show'), 5000);
+  if (document.querySelector('.modal-overlay.open')) {
+    _notifTimer = setTimeout(_showNextNotif, 20000);
+    return;
+  }
+  const msg = NOTIF_MESSAGES[_notifIdx % NOTIF_MESSAGES.length];
+  _notifIdx++;
+  showPremiumNotif(msg);
+  _notifTimer = setTimeout(_showNextNotif, 20000);
+}
+
+function showPremiumNotif(msg) {
+  // Remove existing
+  const old = document.getElementById('premiumNotif');
+  if (old) old.remove();
+
+  const el = document.createElement('div');
+  el.id = 'premiumNotif';
+  el.className = 'premium-notif';
+
+  const isExternal = !!msg.ctaUrl;
+  const ctaHref = msg.ctaUrl || '#';
+  // Store action on window for onclick access
+  window._pnAction = msg.action || null;
+
+  el.innerHTML = `
+    <div class="pn-border"></div>
+    <div class="pn-body">
+      <div class="pn-header">
+        <div class="pn-brand">
+          <div class="pn-brand-dot"></div>
+          Lovia<span style="color:var(--pink-deep);font-style:italic">Partner</span>
+        </div>
+        <button class="pn-close" onclick="closePremiumNotif()" aria-label="Tutup">✕</button>
+      </div>
+      <div class="pn-content">
+        <div class="pn-emoji">${msg.emoji}</div>
+        <div class="pn-text">
+          <div class="pn-title">${msg.title}</div>
+          <div class="pn-desc">${msg.desc}</div>
+          <div class="pn-badge">${msg.badge}</div>
+        </div>
+      </div>
+      <div class="pn-cta">
+        <a href="${ctaHref}" ${isExternal ? 'target="_blank" rel="noopener"' : ''} class="pn-cta-btn" onclick="handleNotifCta(event, ${isExternal})">
+          <i class="fas fa-arrow-right" style="font-size:.7rem"></i> ${msg.cta}
+        </a>
+        <a href="https://wa.me/628988995637" target="_blank" class="pn-wa-btn" title="WhatsApp Admin">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </div>
+      <div class="pn-progress">
+        <div class="pn-progress-fill" id="pnProgressFill"></div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(el);
+
+  // Trigger show animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.classList.add('show');
+      // Start progress bar
+      const fill = document.getElementById('pnProgressFill');
+      if (fill) {
+        setTimeout(() => fill.classList.add('animating'), 100);
+      }
+    });
+  });
+
+  // Auto dismiss after 7 seconds
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => closePremiumNotif(), 7500);
+}
+
+function closePremiumNotif() {
+  const el = document.getElementById('premiumNotif');
+  if (!el) return;
+  el.classList.remove('show');
+  el.classList.add('hide');
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
+}
+
+function handleNotifCta(event, isExternal) {
+  if (!isExternal) {
+    event.preventDefault();
+    closePremiumNotif();
+    if (typeof window._pnAction === 'function') {
+      window._pnAction();
+      window._pnAction = null;
+    }
+    return;
+  }
+  // External link — let browser open it
+  closePremiumNotif();
 }

@@ -2,7 +2,7 @@
 <html lang="id" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Lovia Partner — Companionship Premium 2026</title>
   
   <!-- Primary Meta -->
@@ -34,6 +34,8 @@
   <link rel="icon" type="image/png" href="https://web637.github.io/LoviaPartner/favicon.png">
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
@@ -436,25 +438,35 @@
   <div class="db-overlay" id="adminOverlay" onclick="closeDashSidebar('admin')"></div>
   <div class="dashboard-sidebar" id="adminSidebar">
     <div class="db-logo">
-      Lovia<span>Admin</span>
+      <span style="font-size:inherit;color:inherit;font-style:normal">Lovia</span><span>Admin</span>
       <button class="db-logo-close" onclick="closeDashSidebar('admin')" title="Tutup menu">✕</button>
     </div>
+    <div class="db-sidebar-avatar">
+      <div class="db-sidebar-avatar-icon"><i class="fas fa-crown"></i></div>
+      <div>
+        <div class="db-sidebar-avatar-label">Admin Lovia</div>
+        <div class="db-sidebar-avatar-sub">Super Administrator</div>
+      </div>
+    </div>
     <nav class="db-nav">
+      <div class="db-nav-label">Menu Utama</div>
       <a class="db-link active" onclick="showAdminTab('overview');closeDashSidebar('admin')"><i class="fas fa-chart-pie"></i> Overview</a>
       <a class="db-link" onclick="showAdminTab('talents');closeDashSidebar('admin')"><i class="fas fa-users"></i> Kelola Talent</a>
       <a class="db-link" onclick="showAdminTab('orders');closeDashSidebar('admin')"><i class="fas fa-shopping-bag"></i> Pesanan</a>
+      <div class="db-nav-label">Konten</div>
       <a class="db-link" onclick="showAdminTab('pricelist');closeDashSidebar('admin')"><i class="fas fa-tags"></i> Pricelist</a>
       <a class="db-link" onclick="showAdminTab('testimonials');closeDashSidebar('admin')"><i class="fas fa-star"></i> Testimoni</a>
+      <div class="db-nav-label">Sistem</div>
       <a class="db-link" onclick="showAdminTab('settings');closeDashSidebar('admin')"><i class="fas fa-cog"></i> Pengaturan</a>
     </nav>
     <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+  <div class="db-main-wrap">
     <div class="db-topbar">
       <button class="db-hamburger" onclick="openDashSidebar('admin')" title="Buka menu"><i class="fas fa-bars"></i></button>
-      <div class="db-topbar-title">Lovia <span style="color:var(--pink-deep)">Admin</span></div>
+      <div class="db-topbar-title">Lovia<span style="color:var(--pink-deep);font-style:italic">Admin</span></div>
       <span class="db-topbar-user">👑 Admin</span>
-      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="btn-home-txt">Logout</span></button>
     </div>
     <div class="dashboard-content" id="adminContent">
       <div id="admin-tab-overview" class="admin-tab active"></div>
@@ -475,21 +487,30 @@
       Lovia<span>Talent</span>
       <button class="db-logo-close" onclick="closeDashSidebar('talent')" title="Tutup menu">✕</button>
     </div>
+    <div class="db-sidebar-avatar" id="talentSidebarAvatar">
+      <div class="db-sidebar-avatar-icon"><i class="fas fa-star"></i></div>
+      <div>
+        <div class="db-sidebar-avatar-label" id="talentSidebarName">Talent</div>
+        <div class="db-sidebar-avatar-sub">Lovia Partner</div>
+      </div>
+    </div>
     <nav class="db-nav">
+      <div class="db-nav-label">Menu</div>
       <a class="db-link active" onclick="showTalentTab('overview');closeDashSidebar('talent')"><i class="fas fa-home"></i> Dashboard</a>
       <a class="db-link" onclick="showTalentTab('orders');closeDashSidebar('talent')"><i class="fas fa-calendar-check"></i> Booking</a>
+      <a class="db-link" onclick="showTalentTab('earnings');closeDashSidebar('talent')"><i class="fas fa-wallet"></i> Pendapatan</a>
+      <div class="db-nav-label">Profil</div>
       <a class="db-link" onclick="showTalentTab('profile');closeDashSidebar('talent')"><i class="fas fa-camera"></i> Kelola Foto</a>
       <a class="db-link" onclick="showTalentTab('profile');closeDashSidebar('talent')"><i class="fas fa-user-edit"></i> Edit Profil</a>
-      <a class="db-link" onclick="showTalentTab('earnings');closeDashSidebar('talent')"><i class="fas fa-wallet"></i> Pendapatan</a>
     </nav>
     <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+  <div class="db-main-wrap">
     <div class="db-topbar">
       <button class="db-hamburger" onclick="openDashSidebar('talent')" title="Buka menu"><i class="fas fa-bars"></i></button>
-      <div class="db-topbar-title">Lovia <span style="color:var(--pink-deep)">Talent</span></div>
+      <div class="db-topbar-title">Lovia<span style="color:var(--pink-deep);font-style:italic">Talent</span></div>
       <span class="db-topbar-user" id="talentTopbarUser">✨ Talent</span>
-      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="btn-home-txt">Logout</span></button>
     </div>
     <div class="dashboard-content" id="talentContent">
       <div id="talent-tab-overview" class="talent-tab active"></div>
